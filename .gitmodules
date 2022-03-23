@@ -1,0 +1,3 @@
+[submodule "vacs"]
+	path = vacs
+	url = git@github.com:kka-na/vacs.git
