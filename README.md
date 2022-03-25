@@ -1,1 +1,1 @@
-# AEYE VACS
+# CVLab Autonomous License Project - VACS
