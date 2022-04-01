@@ -64,7 +64,7 @@ class Final:
 
     def EKF_nav_Callback(self, msg):
         self.GPS_error_type = 1 if msg.position_accuracy.x > 0.7 else 0
-        self.GPS_accuracy = int(msg.position_accuracy.x * 100)
+        self.GPS_accuracy = round(float(msg.position_accuracy.x), 3)
 
     def Video0_result_Callback(self, msg):
         self.Video0_result_count += 1
@@ -106,7 +106,7 @@ class Final:
 
         #print("GPS : {}Hz".format(self.IMU_temp_count))
 
-        gps_accuracy.x = self.GPS_error_type
+        gps_accuracy.x = not self.GPS_error_type
         gps_accuracy.y = self.GPS_accuracy
 
         if self.Sbg_euler_count > 18:
