@@ -33,7 +33,6 @@ class Can:
 
         self.ros_print = True
 
-
     def BSD_can_push(self):
         while True:
             message = can.Message(arbitration_id=1491, data=0)
