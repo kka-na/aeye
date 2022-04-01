@@ -66,6 +66,8 @@ class Final:
         self.GPS_error_type = 1 if msg.position_accuracy.x > 0.7 else 0
         self.GPS_accuracy = round(float(msg.position_accuracy.x), 3)
 
+        
+
     def Video0_result_Callback(self, msg):
         self.Video0_result_count += 1
 
