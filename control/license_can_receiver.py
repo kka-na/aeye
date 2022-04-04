@@ -165,9 +165,9 @@ class CanReceiver:
         record[5] = int(self.rcv_wheel_speed)
 
 
-        if self.brake_pedal > 30 and self.mode == 1:
+        if self.brake_pedal > 10 and self.mode == 1:
             switch[0] = 1
-        elif self.accel_pedal > 30 and self.mode == 1:
+        elif self.accel_pedal > 10 and self.mode == 1:
             switch[1] = 1
         elif abs(self.drvtq) > 160 and self.mode == 1:
             switch[2] = 1
@@ -188,7 +188,7 @@ class CanReceiver:
         cur_time = time.time()
         while True:
             self.receiver()
-            if time.time() - cur_time > 0.1:
+            if time.time() - cur_time > 0.02:
                 self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
                 print('-------------')
                 self.publisher()
