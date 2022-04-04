@@ -10,8 +10,9 @@ from std_msgs.msg import Int8
 
 class OP():
     def __init__(self):
+        rospy.init_node('op_mode', anonymous=True)
         self.bus = can.ThreadSafeBus(interface='socketcan', channel='can0', bitreate=500000)
-        self.db = cantools.database.load_file('/home/dreamingweaver/Downloads/hyundai_can.dbc')
+        self.db = cantools.database.load_file('/home/lattepanda/Documents/can/hyundai_can.dbc')
 
         self.radar = {'main' : 0, 'speed' : 0}
         self.acc = False
@@ -27,12 +28,10 @@ class OP():
         self.recv_mode = msg.data
     
     def speed_callback(self, msg):
-        self.recv_speed = msg.speed
-
+        self.recv_speed = msg.data
 
     def receive(self):
         data = self.bus.recv()
-
         if data == None:
             pass
         elif (data.arbitration_id == 0x420): #SCC
@@ -54,35 +53,27 @@ class OP():
             self.spam['main'] = time.time()
             data['CF_Clu_CruiseSwMain'] = 1 
             data['CF_Clu_CruiseSwState'] = 0
-            msg = self.db.encode_message('CLU11', data)
-            can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
-            self.bus.send(can_msg)
+            self.sender(data)
 
-        elif(self.radar['main'] == 1 and mode == 0 and time.time()-self.spam['main'] > 0.1 and self.acc == True): #@Zero
+        elif(self.radar['main'] == 1 and mode == 0 and time.time()-self.spam['main'] > 0.1): #@Zero
             self.spam['main'] = time.time()
             data['CF_Clu_CruiseSwMain'] = 1 
             data['CF_Clu_CruiseSwState'] = 0
-            msg = self.db.encode_message('CLU11', data)
-            can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
-            self.bus.send(can_msg)
+            self.sender(data)
 
         if(self.radar['main'] == 1 and mode == 1 and self.acc == False and time.time()-self.spam['acc'] > 0.1):
             self.spam['acc'] = time.time()
             data['CF_Clu_CruiseSwState'] = 2
             data['CF_Clu_Vanz'] = self.radar['speed']
-            msg = self.db.encode_message('CLU11', data)
-            can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
-            self.bus.send(can_msg)
+            self.sender(data)
 
         elif(self.radar['main'] == 1 and mode == 1 and time.time()-self.spam['accel'] > 0.1 and self.acc == True):
             self.spam['accel'] = time.time()
             data['CF_Clu_CruiseSwState'] = self.target(self.radar['speed'], target)
             data['CF_Clu_CruiseSwMain'] = 0
             data['CF_Clu_Vanz'] = self.radar['speed']
-            msg = self.db.encode_message('CLU11', data)
-            can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
             if(self.radar['speed'] != target):
-                self.bus.send(can_msg)
+                self.sender(data)
 
     def target(self, current, target):
         if current < target:
@@ -92,14 +83,19 @@ class OP():
         elif current == target:
             return 0
 
+    def sender(self, data):
+        msg = self.db.encode_message('CLU11', data)
+        can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
+        self.bus.send(can_msg)
+
     def daemon(self):
         temp_mode = 0
         temp_target = 0
         while 1:
             self.receive()
-            if temp_mode != self.recv_mode :
+            if temp_mode != self.recv_mode:
                 temp_mode = self.recv_mode
-            if temp_target != self.recv_speed :
+            if temp_target != self.recv_speed:
                 temp_target = self.recv_speed
             self.send(temp_mode, temp_target)
 
