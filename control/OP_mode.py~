@@ -13,6 +13,7 @@ class OP():
 
         self.radar = {'main' : 0, 'speed' : 0}
         self.acc = False
+        self.button = None
         self.spam = {'main' : time.time(), 'accel' : time.time(), 'acc' : time.time()}
 
     def receive(self):
@@ -27,15 +28,15 @@ class OP():
         elif (data.arbitration_id == 1057): #SCC12
             data = self.db.decode_message(data.arbitration_id, data.data)
             self.acc = True if data['ACCMode'] == "enabled" else False 
-        elif (data.arbitration_id == 1265): #Debug
+        elif (data.arbitration_id == 1265): #SCC12
             data = self.db.decode_message(data.arbitration_id, data.data)
             
 
 
-    def send(self, target): #add mode
+    def send(self, button):
         data = {'CF_Clu_CruiseSwState': 0.0, 'CF_Clu_CruiseSwMain': 0.0, 'CF_Clu_SldMainSW': 0.0, 'CF_Clu_ParityBit1': 0.0, 'CF_Clu_VanzDecimal': 0.0, 'CF_Clu_Vanz': 0.0, 'CF_Clu_SPEED_UNIT': 0.0, 'CF_Clu_DetentOut': 1.0, 'CF_Clu_RheostatLevel': 12.0, 'CF_Clu_CluInfo': 0.0, 'CF_Clu_AmpInfo': 0.0, 'CF_Clu_AliveCnt1': 0.0}
 
-        if(self.radar['main'] == 0 and time.time()-self.spam['main'] > 0.1): #@Zero
+        if(self.radar['main'] == 0 and time.time()-self.spam['main'] > 0.1):
             self.spam['main'] = time.time()
             data['CF_Clu_CruiseSwMain'] = 1
             data['CF_Clu_CruiseSwState'] = 0
@@ -51,6 +52,7 @@ class OP():
             can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
             self.bus.send(can_msg)
         elif(self.radar['main'] == 1 and time.time()-self.spam['accel'] > 0.1 and self.acc == True):
+            target = 50
             self.spam['accel'] = time.time()
             data['CF_Clu_CruiseSwState'] = self.target(self.radar['speed'], target)
             data['CF_Clu_CruiseSwMain'] = 0
