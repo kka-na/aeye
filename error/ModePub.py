@@ -20,7 +20,7 @@ class ModeChanger:
         rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber('/estop', Int8, self.estop_callback)
         # rospy.Subscriber('/pos_state', Bool, self.pos_state_callback)
-        rospy.Subscriber('/sbg/ekf_nav',SbgEkfNav, self.ekf_nav)
+        # rospy.Subscriber('/sbg/ekf_nav',SbgEkfNav, self.ekf_nav)
 
 
         self.mode_pub = rospy.Publisher("/mode", Int8, queue_size=1)
@@ -53,7 +53,7 @@ class ModeChanger:
         mode_msg = Int8()
         
         if self.estop == 1:
-            time.sleep(1)
+            #time.sleep(1)
             mode_msg.data = 0
             self.button = 0
             print(self.button, "E-STOP")
