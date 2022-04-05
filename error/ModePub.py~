@@ -14,13 +14,11 @@ class ModeChanger:
         self.button = 0
         self.estop = 0
         self.pos_state = False # normal , True is Error
-	    self.acc = 0
 
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber('/estop', Int8, self.estop_callback)
-	    rospy.Subscriber('/acc', Int8, self.acc_callback)
         # rospy.Subscriber('/pos_state', Bool, self.pos_state_callback)
         # rospy.Subscriber('/sbg/ekf_nav',SbgEkfNav, self.ekf_nav)
 
@@ -48,9 +46,6 @@ class ModeChanger:
     def estop_callback(self, msg):
         self.estop = msg.data
 
-    def acc(self, msg):
-        self.acc = msg.data
-
     def pos_state_callback(self, msg):
         self.pos_state = msg.data # True of False
 
@@ -67,11 +62,6 @@ class ModeChanger:
             # self.buttion = 0
             # print(self.buttion, "Not position in k-city")
         elif self.button == 1 and (1 in self.system_array or 1 in self.sensor_array):
-            # time.sleep(2)
-            mode_msg.data = 0
-            self.button = 0
-            print(self.button, "Error")
-        elif self.button == 1 and (not self.acc):
             # time.sleep(2)
             mode_msg.data = 0
             self.button = 0
