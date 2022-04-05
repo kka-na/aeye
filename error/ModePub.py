@@ -75,7 +75,7 @@ class ModeChanger:
             # time.sleep(2)
             mode_msg.data = 0
             self.button = 0
-            print(self.button, "Error")
+            print(self.button, "ACC Error")
         elif self.button == 1:
             mode_msg.data = 1
             print(self.button, "autopilot")
