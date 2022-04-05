@@ -1,6 +1,5 @@
 import can
 import cantools
-import signal
 import threading
 
 import rospy
