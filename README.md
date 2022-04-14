@@ -5,13 +5,11 @@ The project is divided into three seperate modules which are logically linked vi
 
 ![System Diagram](http://165.246.39.210/public/vacs_diagram.png)
 
-Project details will be continuously updated. 😸
-
 ## Milestones 👷
-Semi-major fixes
 **Hardware Fixes**
 - [ ] SCC Radar seperation (Radar module must be seperated from vehicle CAN. Radar -> Cable Block -> Vehicle Can)
-- [ ] Speaker installation (Speakers must be installed in a location where volume or on/off control is not possible)
+- [ ] Speaker installation (Speakers must be installed in a location where volume or on/off control is not possible)  
+
 **Software Fixes**
 - [ ] BSD distance adjustments (Front and back)
 - [ ] Limit lane change conditions (Disable lane change when road curvature is above threshold)
