@@ -1,16 +1,23 @@
 # Autonomous License Project - VACS
-This repository contains code for the **Inha University autonomous license project**.  
+Code for the **Inha University autonomous license project**.
 
-The project is divided into three seperate modules which are logically linked via ROS.
-
+This project is divided into three separate modules which are linked via ROS.
+<details>
+    <summary><b>System Diagram</b></summary>
+  
 ![System Diagram](http://165.246.39.210/public/vacs_diagram.png)
+  </details>
 
 ## Milestones 👷
-**Hardware Fixes**
-- [ ] SCC Radar seperation (Radar module must be seperated from vehicle CAN. Radar -> Cable Block -> Vehicle Can)
+<details>
+  <summary><b>Hardware Fixes</b></summary>
+  
+- [ ] SCC Radar separation (Radar module must be separated from vehicle CAN. Radar -> Cable Block -> Vehicle Can)
 - [ ] Speaker installation (Speakers must be installed in a location where volume or on/off control is not possible)  
-
-**Software Fixes**
+</details>
+<details>
+  <summary><b>Software Fixes</b></summary>
+  
 - [ ] BSD distance adjustments (Front and back)
 - [ ] Limit lane change conditions (Disable lane change when road curvature is above threshold)
 - [ ] Driver TOR (take over request) (TOR when two wheels depart lane)
@@ -18,8 +25,9 @@ The project is divided into three seperate modules which are logically linked vi
 - [ ] Enable autonomous mode only when lane lines are visible
 - [ ] TOR logging + Fix delay
 - [ ] TOR visual + auditory alert 
+</details>
 
-### Finished Tasks (excluding paper work💦)
+### Completed Tasks (excluding paper work💦)
 1. LiDAR BSD
 2. Fix CAN Error
 3. E-STOP button
@@ -33,7 +41,6 @@ The project is divided into three seperate modules which are logically linked vi
 11. CAN (RPM, Steering, Gear)
 12. Logging
 
-## Contribution
-This project is not open to any public contributions.
-
-
+## Contributors
+- [Kka-na](github.com/kka-na)
+- [Jang-KJ](github.com/maru-jang)
