@@ -42,5 +42,5 @@ This project is divided into three separate modules which are linked via ROS.
 12. Logging
 
 ## Contributors
-- [Kka-na](github.com/kka-na)
-- [Jang-KJ](github.com/maru-jang)
+- [Kka-na](https://github.com/kka-na)
+- [Jang-KJ](https://github.com/maru-jang)
