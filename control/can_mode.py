@@ -12,7 +12,7 @@ class OP():
     def __init__(self):
         rospy.init_node('op_mode', anonymous=True)
         self.bus = can.ThreadSafeBus(interface='socketcan', channel='can1', bitreate=500000)
-        self.db = cantools.database.load_file('/home/lattepanda/Documents/can/hyundai_can.dbc')
+        self.db = cantools.database.load_file('/home/aeye/Documents/can/hyundai_can.dbc')
 
         self.bsd_array = [0, 0]
         self.radar = {'main' : 0, 'speed' : 0}
@@ -51,8 +51,8 @@ class OP():
             self.acc = True if data['ACCMode'] == "enabled" else False 
         elif (data.arbitration_id == 1265): #Debug
             data = self.db.decode_message(data.arbitration_id, data.data)
-        elif (msg.arbitration_id == 688):
-                sas = self.db.decode_message(msg.arbitration_id, msg.data)
+        elif (data.arbitration_id == 688):
+                sas = self.db.decode_message(data.arbitration_id, data.data)
                 self.sas_angle = sas['SAS_Angle']
 
     def send(self, mode, target): #add mode

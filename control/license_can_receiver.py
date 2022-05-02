@@ -35,7 +35,7 @@ class CanReceiver:
 
     def can_initialize(self):
         self.db = cantools.database.load_file(
-            '/home/lattepanda/Documents/can/hyundai_can.dbc')
+            '/home/aeye/Documents/can/hyundai_can.dbc')
         try:
             self.bus = can.interface.Bus(
             interface='socketcan', channel='can0', bitrate=500000)
