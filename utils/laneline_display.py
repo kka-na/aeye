@@ -1,3 +1,4 @@
+from turtle import left
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -53,20 +54,20 @@ while 1:
 
             bad = False
 
-            if (line2s[0]-line1s[0] > 3.6):
-                print("Lane 1 & 2's Width {} ".format(line2s[0]-line1s[0]))
-                bad = True
-            if (line1s[0]>-0.7):
-                print("Lane 1 is Near 0")
-                bad = True
-            if (line2s[0]<0.7):
-                print("Lane 2 is Near 0")
-                bad = True
+            # if (line2s[0]-line1s[0] > 3.6):
+            #     print("Lane 1 & 2's Width {} ".format(line2s[0]-line1s[0]))
+            #     bad = True
+            # if (line1s[0]>-0.7):
+            #     print("Lane 1 is Near 0")
+            #     bad = True
+            # if (line2s[0]<0.7):
+            #     print("Lane 2 is Near 0")
+            #     bad = True
             
-            if(not bad):
-               print("State OK")
-            else:
-               print("State BAD")
+            # if(not bad):
+            #    print("State OK")
+            # else:
+            #    print("State BAD")
             # print("left: ", line1s[0])
             # print("right: ", line2s[0])
             # if (-0.9<line1s[0]<-0.75):
@@ -82,7 +83,25 @@ while 1:
             #     print("right out")
             # else:
             #     print("right stable")
+            
+            xx = np.array(x)[5:15]
+            
+            lefty = np.array(line1s)[5:15]
+            righty = np.array(line2s)[5:15]
+            left_fit_cr = np.polyfit(xx, lefty, 2)
+            right_fit_cr = np.polyfit(xx, righty, 2)
+            # print(left_fit_cr[0], left_fit_cr[1], left_fit_cr[2])
+            # print(right_fit_cr[0], right_fit_cr[1], right_fit_cr[2])
+            left_curvated = ((1+(2*left_fit_cr[0]+left_fit_cr[1])**2)**1.5)/np.absolute(2*left_fit_cr[0])
+            right_curvated = ((1+(2*right_fit_cr[0]+right_fit_cr[1])**2)**1.5)/np.absolute(2*right_fit_cr[0])
 
+            print("Left Curvature : {}m , Right Curvature : {}m".format(int(left_curvated), int(right_curvated)))
+
+            '''
+            if left_blink:
+                if left_curvature < 1000 : # not straight line 
+                    do not change lane 
+            '''
 
             plt.ion()
             plt.cla()
