@@ -9,7 +9,8 @@ from cereal.messaging import SubMaster
 sm = SubMaster(['carState', 'longitudinalPlan', 'carControl', 'radarState', 'liveCalibration', 'controlsState', 'carParams',
                             'liveTracks', 'modelV2', 'liveParameters', 'lateralPlan', 'sendcan', 'gpsLocationExternal', 
                             'clocks','thumbnail', 'roadCameraState', 'driverState', 'procLog', 'ubloxGnss', 'ubloxRaw', 
-                            'cameraOdometry', 'carEvents', 'driverCameraState', 'driverMonitoringState'], addr='172.20.10.8')
+                            'cameraOdometry', 'carEvents', 'driverCameraState', 'driverMonitoringState'], 
+                            addr='192.168.43.1')
 
 temp = {'0' : 0, '1' : 0, '2' : 0, '3' : 0}
 
@@ -95,7 +96,11 @@ while 1:
             left_curvated = ((1+(2*left_fit_cr[0]+left_fit_cr[1])**2)**1.5)/np.absolute(2*left_fit_cr[0])
             right_curvated = ((1+(2*right_fit_cr[0]+right_fit_cr[1])**2)**1.5)/np.absolute(2*right_fit_cr[0])
 
-            print("Left Curvature : {}m , Right Curvature : {}m".format(int(left_curvated), int(right_curvated)))
+            if(int(left_curvated) < 300 ):
+                #print("Left Cur : {}m , Right Cur : {}m".format(int(left_curvated), int(right_curvated)))
+                print("Can't Change Lanes Left Cur : {} ".format(int(left_curvated)))
+            if(int(right_curvated) < 300):
+                print("Can't Change Lanes Right Cur : {} ".format(int(right_curvated)))
 
             '''
             if left_blink:
