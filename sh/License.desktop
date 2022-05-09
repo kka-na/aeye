@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=true
+Name=license_panda
+Icon=/home/lattepanda/Documents/vacs/public/pngs/aeye.png
+Exec=bash -c "/home/lattepanda/Documents/bash/license_panda.sh"
+Name[en_US]=License
