@@ -12,7 +12,7 @@ This project is divided into three separate modules which are linked via ROS.
 <details>
   <summary><b>Hardware Fixes</b></summary>
   
-- [ ] SCC Radar separation (Radar module must be separated from vehicle CAN. Radar -> Cable Block -> Vehicle Can)
+- [x] SCC Radar separation (Radar module must be separated from vehicle CAN. Radar -> Cable Block -> Vehicle Can)
 - [ ] Speaker installation (Speakers must be installed in a location where volume or on/off control is not possible)  
 </details>
 <details>
