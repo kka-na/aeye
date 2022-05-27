@@ -40,15 +40,15 @@ def get(data):
         frame = list(parsed[3:3+dlc])
         past = _past[id]
 
-
         for i, signal in enumerate(frame):
             if past[i] != signal:
                 _changes[id][i] = _changes[id][i] + 1
-            past = frame
+            _past[id] = frame
 
-    _changes = sorted(_changes.items(), key=lambda x : int(x[0]))
-    pprint.pprint(_changes)
+    # _changes = sorted(_changes.items(), key=lambda x : int(x[0]))
+    return _changes
 
 if __name__ == '__main__':
     data = get_hst()
-    get(data)
+    changes = get(data)
+    # pprint.pprint(changes)
