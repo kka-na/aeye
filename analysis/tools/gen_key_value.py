@@ -7,7 +7,8 @@ if __name__ == '__main__':
     db = cantools.database.load_file('../data/hyundai_can.dbc')
     for msg in db.messages:
         # CAN[msg.frame_id] = msg.name
-        CAN[msg.name] = msg.frame_id
+        # CAN[msg.name] = msg.frame_id
+        CAN[msg.frame_id] = msg.length
 
     pprint.pprint(CAN)
 
