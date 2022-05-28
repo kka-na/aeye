@@ -6,6 +6,7 @@ def get_hst():
         data = open('../data/ERROR.hst', 'r')
     elif _DB == '2':
         data = open('../data/SAFE.hst', 'r')
+    return data
 
 if __name__ == '__main__':
     data = get_hst()

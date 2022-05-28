@@ -25,6 +25,7 @@ def get(data):
 if __name__ == '__main__':
     data = get_hst()
     data = get(data)
+    print(data)
     print('\nNumber of IDs', len(data))
 
 
