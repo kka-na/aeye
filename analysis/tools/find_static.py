@@ -1,4 +1,4 @@
-# Find static and dynamic messages
+# Find static and dynamic messages V2
 import cantools
 import cankey
 import pprint
@@ -13,10 +13,23 @@ def get_hst():
     data.readline()
     return data
 
+def init_frequency(frequency):
+    for keys in frequency:
+        frequency[keys] = dict.fromkeys(frequency[keys], int(0))
+    return frequency
+
+def get_static(past, frequency):
+    for message in frequency:
+        for signal in frequency[message]:
+            msg = frequency[message]
+            if msg[signal] > 10:
+                del past[message][signal]
+    return past
+
 def get(db, data):
     _flag = cankey.DATA.copy() 
     _past = cankey.DATA.copy() 
-    _static = defaultdict(set)
+    _frequency = init_frequency(cankey.DATA.copy())
 
     for lines in data:
         if len(lines) == 17:
@@ -28,15 +41,14 @@ def get(db, data):
         if id in cankey.DATA and id not in ('1191'): #1191 DLC is different
             _current = db.decode_message(int(id), frame)
             for key in _current:
-                if _current[key] == _past[id][key] and _flag[id][key] == True: #Exclude first Data
-                    ids = cankey.ID[int(id)]
-                    key = "{} : {}".format(key, _current[key]) #Save signal and value
-                    _static[ids].add(key)
+                if _current[key] != _past[id][key] and _flag[id][key] == True: #Exclude first Data
+                    _frequency[id][key] = _frequency[id][key] + 1 #Add to frequency
                 else:
                     _flag[id][key] = True
 
             _past[id] = _current
 
+    _static = get_static(_past, _frequency)
     return _static
                 
 if __name__ == '__main__':
