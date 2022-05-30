@@ -1,0 +1,3 @@
+<INT Name="ApplyExt">0</INT>
+<INT Name="ApplyStd">1</INT>
+</DIR>

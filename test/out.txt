@@ -1,0 +1,189 @@
+<DIR Name="FMT0">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">0</INT>
+ <INT Name="High">272</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT1">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">274</INT>
+ <INT Name="High">273</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT2">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">275</INT>
+ <INT Name="High">274</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT3">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">276</INT>
+ <INT Name="High">338</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT4">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">340</INT>
+ <INT Name="High">543</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT5">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">545</INT>
+ <INT Name="High">592</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT6">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">594</INT>
+ <INT Name="High">607</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT7">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">609</INT>
+ <INT Name="High">687</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT8">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">689</INT>
+ <INT Name="High">789</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT9">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">791</INT>
+ <INT Name="High">808</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT10">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">810</INT>
+ <INT Name="High">831</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT11">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">833</INT>
+ <INT Name="High">901</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT12">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">903</INT>
+ <INT Name="High">915</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT13">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">917</INT>
+ <INT Name="High">1135</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT14">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1137</INT>
+ <INT Name="High">1154</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT15">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1156</INT>
+ <INT Name="High">1156</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT16">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1158</INT>
+ <INT Name="High">1167</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT17">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1169</INT>
+ <INT Name="High">1169</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT18">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1171</INT>
+ <INT Name="High">1264</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT19">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1266</INT>
+ <INT Name="High">1286</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT20">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1288</INT>
+ <INT Name="High">1291</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT21">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1293</INT>
+ <INT Name="High">1300</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT22">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1302</INT>
+ <INT Name="High">1344</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT23">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1346</INT>
+ <INT Name="High">1350</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT24">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1352</INT>
+ <INT Name="High">1362</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT25">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1364</INT>
+ <INT Name="High">1368</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
+<DIR Name="FMT26">
+ <STR Name="Name">StopFilter</STR>
+ <INT Name="Low">1370</INT>
+ <INT Name="High">1455</INT>
+ <INT Name="ApplyExt">0</INT>
+ <INT Name="ApplyStd">1</INT>
+</DIR>
