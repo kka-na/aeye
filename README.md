@@ -40,7 +40,13 @@ This project is divided into three separate modules which are linked via ROS.
 10. HW Installation (Lattepanda, Nuvo, E Stop, Light)
 11. CAN (RPM, Steering, Gear)
 12. Logging
-https://avatars.githubusercontent.com/u/61651470?v=4
+
+<style>
+td, th {
+   border: none!important;
+}
+</style>
+
 ## Contributors
 | <img width = "200" height="200" src="https://avatars.githubusercontent.com/u/61651470?v=4" alt="img" /> | <img width = "200" height="200" src="https://avatars.githubusercontent.com/u/63050716?v=4" alt="img" /> | <img width = "200" height="200" src="https://avatars.githubusercontent.com/u/69347961?v=4" alt="img" /> | 
 | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
