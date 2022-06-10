@@ -41,13 +41,16 @@ This project is divided into three separate modules which are linked via ROS.
 11. CAN (RPM, Steering, Gear)
 12. Logging
 
-<style>
-td, th {
-   border: none!important;
-}
-</style>
-
 ## Contributors
-| <img width = "200" height="200" src="https://avatars.githubusercontent.com/u/61651470?v=4" alt="img" /> | <img width = "200" height="200" src="https://avatars.githubusercontent.com/u/63050716?v=4" alt="img" /> | <img width = "200" height="200" src="https://avatars.githubusercontent.com/u/69347961?v=4" alt="img" /> | 
-| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| [hanbro-inha](https://github.com/hanbro-inha)                                                           | [maru](https://github.com/maru-jang)                                                                     | [kka-na](https://github.com/kka-na)                                                                     |
+
+<p align="center">
+    <a href="https://github.com/hanbro-inha">
+	    <img height="100" src="https://avatars.githubusercontent.com/u/61651470?v=4">
+	</a>
+	<a href="https://github.com/maru-jang">
+	    <img height="100" src="https://avatars.githubusercontent.com/u/63050716?v=4">
+	</a>
+	<a href="https://github.com/kka-na">
+	    <img height="100" src="https://avatars.githubusercontent.com/u/69347961?v=4">
+	</a>
+</p>
