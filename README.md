@@ -15,17 +15,6 @@ This project is divided into three separate modules which are linked via ROS.
 - [x] SCC Radar separation (Radar module must be separated from vehicle CAN. Radar -> Cable Block -> Vehicle Can)
 - [ ] Speaker installation (Speakers must be installed in a location where volume or on/off control is not possible)  
 </details>
-<details>
-  <summary><b>Software Fixes</b></summary>
-  
-- [ ] BSD distance adjustments (Front and back)
-- [ ] Limit lane change conditions (Disable lane change when road curvature is above threshold)
-- [ ] Driver TOR (take over request) (TOR when two wheels depart lane)
-- [ ] AEB distance adjustments (ACC distance should be fixed to level 4)
-- [ ] Enable autonomous mode only when lane lines are visible
-- [ ] TOR logging + Fix delay
-- [ ] TOR visual + auditory alert 
-</details>
 
 ### Completed Tasks (excluding paper work💦)
 1. LiDAR BSD
