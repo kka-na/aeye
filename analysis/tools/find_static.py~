@@ -7,7 +7,7 @@ from collections import defaultdict
 def get_hst():
     _DB = input("1) Error DB, 2) Safe DB : ")
     if _DB == '1':
-        data = open('../data/CCAN_false_radar.hst', 'r')
+        data = open('../data/SCC_only.hst', 'r')
     elif _DB == '2':
         data = open('../data/SAFE.hst', 'r')
     data.readline()
