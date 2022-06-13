@@ -6,7 +6,7 @@ import sys
 from sensor_msgs.msg import CompressedImage, PointCloud2
 from visualization_msgs.msg import MarkerArray
 from sbg_driver.msg import SbgEkfNav, SbgEkfEuler, SbgGpsPos
-from std_msgs.msg import Int8MultiArray, Float32MultiArray
+from std_msgs.msg import Int8MultiArray, Float32MultiArray, Bool
 # kana modify
 from geometry_msgs.msg import Point
 
@@ -29,6 +29,9 @@ class Final:
                          Float32MultiArray, self.Video0_result_Callback)
         rospy.Subscriber('/pillar_marker_array', MarkerArray,
                          self.LiDAR_result_Callback)
+        
+        rospy.Subscriber('/unstable_lane',Bool , self.lane_state_callback)
+
         # kana modify
         self.gps_check = rospy.Publisher('/gps_accuracy', Point,  queue_size=1)
         self.sensor_check = rospy.Publisher(
@@ -46,6 +49,8 @@ class Final:
         self.GPS_error_type = 0
         self.FIX_error_type = 0
         self.GPS_accuracy = 0
+
+        self.unstable_lane = 0
 
     def video0_Callback(self, msg):
         self.Video0_count += 1
@@ -66,7 +71,9 @@ class Final:
         self.GPS_error_type = 1 if msg.position_accuracy.x > 0.7 else 0
         self.GPS_accuracy = round(float(msg.position_accuracy.x), 3)
 
-        
+    def lane_state_callback(self, msg):
+        self.unstable_lane = int(msg.data)
+        # print(self.unstable_lane)
 
     def Video0_result_Callback(self, msg):
         self.Video0_result_count += 1
@@ -132,6 +139,14 @@ class Final:
 
         print("LiDAR result : {}Hz".format(self.LiDAR_result_count))
 
+        if self.unstable_lane:
+            system_state.data.extend([True])
+            print("My Lane BAD")
+        else:
+            system_state.data.extend([False])
+
+        # print("LiDAR result : {}Hz".format(self.LiDAR_result_count))
+
         self.Video0_count = 0
         self.Video1_count = 0
         self.LiDAR_points_count = 0
@@ -152,6 +167,10 @@ class Final:
         print("Cam_result, LiDAR_result")
         print(systemstate.data)
 
+
+        sensorstate.data = [0,0,0,0,0,0]
+        systemstate.data = [0,0,int(self.unstable_lane)]
+        
         self.sensor_check.publish(sensorstate)
         self.system_check.publish(systemstate)
         self.gps_check.publish(gpsaccuracy)
@@ -170,7 +189,7 @@ if __name__ == "__main__":
     print(" Check Start !")
     while not rospy.is_shutdown():
         try:
-            rospy.sleep(1)
+            rospy.sleep(0.2)
             signal.signal(signal.SIGINT, signal_handler)
             os.system('clear')
             mm.checker()

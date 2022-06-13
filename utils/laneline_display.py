@@ -1,16 +1,17 @@
 from cereal.messaging import SubMaster
 import numpy as np
-import cv2
+#import cv2
 import matplotlib.pyplot as plt
 import os
 os.environ["ZMQ"] = "1"
 
+# addr = '172.20.10.8'
 addr = '192.168.1.6'
 sm = SubMaster(['carState', 'longitudinalPlan', 'carControl', 'radarState', 'liveCalibration', 'controlsState', 'carParams',
-                            'liveTracks', 'modelV2', 'liveParameters', 'lateralPlan', 'sendcan', 'gpsLocationExternal',
-                            'clocks', 'thumbnail', 'roadCameraState', 'driverState', 'procLog', 'ubloxGnss', 'ubloxRaw',
-                            'cameraOdometry', 'carEvents', 'driverCameraState',  'wideRoadCameraState', 'driverMonitoringState'],
-               addr=addr)
+    'liveTracks', 'modelV2', 'liveParameters', 'lateralPlan', 'sendcan', 'gpsLocationExternal',
+    'clocks', 'thumbnail', 'roadCameraState', 'driverState', 'procLog', 'ubloxGnss', 'ubloxRaw', 'managerState',
+    'cameraOdometry', 'carEvents', 'driverCameraState', 'driverMonitoringState'],
+    addr=addr)
 
 temp = {'0': 0, '1': 0, '2': 0, '3': 0}
 
