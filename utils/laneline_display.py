@@ -6,7 +6,7 @@ import os
 os.environ["ZMQ"] = "1"
 
 # addr = '172.20.10.8'
-addr = '192.168.1.6'
+addr = '192.168.101.100'
 sm = SubMaster(['carState', 'longitudinalPlan', 'carControl', 'radarState', 'liveCalibration', 'controlsState', 'carParams',
     'liveTracks', 'modelV2', 'liveParameters', 'lateralPlan', 'sendcan', 'gpsLocationExternal',
     'clocks', 'thumbnail', 'roadCameraState', 'driverState', 'procLog', 'ubloxGnss', 'ubloxRaw', 'managerState',
