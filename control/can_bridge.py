@@ -25,7 +25,7 @@ class Activate_Signal_Interrupt_Handler:
 record:
 [brake_pedal, accel_pedal, sas_angle, gear, rpm, vel]
 switch:
-[drvtq, brake_pedal, accel_pedal]
+[drvtq, brake_pedal, accel_pedal, ui_button, e-stop, sensor error, system error, lane departure, AEB]
 '''
 class Bridge:
     def __init__(self):
@@ -73,8 +73,13 @@ class Bridge:
 
         rospy.Subscriber('/mode', Int8, self.mode_set_callback)
         rospy.Subscriber('/target_vel', Int8, self.vel_set_callback)
-        rospy.Subscriber("/estop", Int8, self.estop_callback)
         rospy.Subscriber("/BSD_check", Int8MultiArray, self.BSD_callback)
+        rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
+        rospy.Subscriber("/estop", Int8, self.estop_callback)
+        rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
+        rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
+        rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
+        #AEB sub ...
 
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
@@ -85,7 +90,9 @@ class Bridge:
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
 
         self.can_switch_data = Int8MultiArray()
-        self.can_switch_data.data = [0, 0, 0]
+        # [drvtq, brake_pedal, accel_pedal, ui_button, e-stop, sensor error, system error, lane departure, AEB]
+        self.can_switch_data.data = [0, 0, 0, 0, 0, 0, 0, 0, 0] 
+
         
         self.radar = Bool()
         self.radar.data = False
@@ -99,6 +106,12 @@ class Bridge:
         self.estop = msg.data
     def BSD_callback(self, msg):
         self.bsd_array = msg.data
+    def system_state_callback(self, msg):
+        self.system_array = msg.data
+    def sensor_state_callback(self, msg):
+        self.sensor_array = msg.data
+    def lane_warn_callback(self, msg):
+        self.lane_warning = msg.data
 
     def set_SCC11(self, data): #1056
         data = self.db.decode_message(data.arbitration_id, data.data)

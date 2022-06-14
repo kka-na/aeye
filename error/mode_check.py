@@ -23,7 +23,7 @@ class ModeChanger:
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber('/estop', Int8, self.estop_callback)
-        rospy.Subscriber('/acc', Int8, self.acc_callback)
+        # rospy.Subscriber('/acc', Int8, self.acc_callback)
 
         #rospy.Subscriber('/unstable_lane', Bool, self.lane_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
