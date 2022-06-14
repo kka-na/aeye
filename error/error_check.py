@@ -55,6 +55,7 @@ class Final:
         self.unstable_lane = 0
         self.radar = 0 # false
         self.mode = 0
+        self.test_lane = 0
 
     def mode_callback(self, msg):
         self.mode = msg.data
@@ -156,9 +157,11 @@ class Final:
 
         if self.unstable_lane and self.mode == 0:
             system_state.data.extend([True])
+            self.test_lane = 1
             print("My Lane BAD")
         else:
             system_state.data.extend([False])
+            self.test_lane = 0
 
         # print("LiDAR result : {}Hz".format(self.LiDAR_result_count))
 
@@ -184,7 +187,7 @@ class Final:
 
 
         sensorstate.data = [0,0,0,0,0,not self.radar]
-        systemstate.data = [0,0,int(self.unstable_lane)]
+        systemstate.data = [0,0,self.test_lane]
         
         self.sensor_check.publish(sensorstate)
         self.system_check.publish(systemstate)

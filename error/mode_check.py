@@ -106,7 +106,7 @@ class ModeChanger:
 def main():
     rospy.init_node('ModeChanger')
     chgmod = ModeChanger()
-    rate = rospy.Rate(5)
+    rate = rospy.Rate(10)
     print("Ready to mode switch.")
     while not rospy.is_shutdown():
         # if # button clicked:

@@ -6,7 +6,7 @@ CCAN_filters = [
     # {"can_id": 356,  "can_mask" : 0xfff, "extended": False},
     # {"can_id": 903,  "can_mask" : 0xfff, "extended": False},
     # {"can_id": 1042,  "can_mask" : 0xfff, "extended": False},
-    # {"can_id": 897,  "can_mask" : 0xfff, "extended": False},
+    
     # {"can_id": 1040,  "can_mask" : 0xfff, "extended": False},
     # {"can_id": 1078,  "can_mask" : 0xfff, "extended": False},
     # {"can_id": 1151,  "can_mask" : 0xfff, "extended": False},
@@ -38,7 +38,7 @@ CCAN_filters = [
     # {"can_id": 1473,  "can_mask" : 0xfff, "extended": False}, #not exist in dbc
     # {"can_id": 1507,  "can_mask" : 0xfff, "extended": False}, #not exist in dbc
 
-
+    {"can_id": 897,  "can_mask" : 0xfff, "extended": False}, #MDPS11
     {"can_id": 1407,  "can_mask" : 0xfff, "extended": False},
     {"can_id": 339,  "can_mask" : 0xfff, "extended": False}, #!!!!!
     {"can_id": 916,  "can_mask" : 0xfff, "extended": False}, #!!!!!

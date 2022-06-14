@@ -193,7 +193,7 @@ class Bridge:
                 exit(0)
             except Exception as e:
                 self.radar.data = False
-                print("RADAR ERROR")    
+                print("RADAR ERROR")
                 print(e)
 
     def publisher(self):
