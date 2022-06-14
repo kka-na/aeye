@@ -10,7 +10,7 @@ import signal
 import threading
 
 import rospy
-from std_msgs.msg import String, Float32, Int8
+from std_msgs.msg import String, Float32, Int8, Bool
 from std_msgs.msg import Int8MultiArray, Int16MultiArray
 
 class Activate_Signal_Interrupt_Handler:
@@ -30,7 +30,6 @@ switch:
 class Bridge:
     def __init__(self):
         #######CAN############
-        
         self.db = cantools.database.load_file(
                 '/home/aeye/Documents/aeye/control/hyundai_can.dbc')
         self.CCAN = can.ThreadSafeBus(
@@ -53,13 +52,6 @@ class Bridge:
         # self.rcv_wheel_speed = 1.0 #km/h
         # self.rcv_steer_angle = None
         # self.rcv_steer_tq = None
-        '''self.res = {'CF_Clu_CruiseSwState': 0.0, 
-        'CF_Clu_CruiseSwMain': 0.0, 'CF_Clu_SldMainSW': 0.0,
-        'CF_Clu_ParityBit1': 0.0, 'CF_Clu_VanzDecimal': 0.0, 
-        'CF_Clu_Vanz': 0.0, 'CF_Clu_SPEED_UNIT': 0.0, 
-        'CF_Clu_DetentOut': 0.0, 'CF_Clu_RheostatLevel': 12.0, 
-        'CF_Clu_CluInfo': 0.0, 'CF_Clu_AmpInfo': 0.0, 
-        'CF_Clu_AliveCnt1': 9.0} '''
 
         self.gear_map = {'P' : 0,'R' : 1, 'N' : 2, 'D' : 3}          
 
@@ -87,12 +79,17 @@ class Bridge:
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.mode_pub = rospy.Publisher('/mode_set', Int8, queue_size=1)
-
+        self.radar_pub = rospy.Publisher('/radar', Bool, queue_size=1)
+        
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
 
         self.can_switch_data = Int8MultiArray()
         self.can_switch_data.data = [0, 0, 0]
+        
+        self.radar = Bool()
+        self.radar.data = False
+
 
     def mode_set_callback(self, msg):
         self.mode = msg.data
@@ -134,14 +131,12 @@ class Bridge:
         self.clu_data['CF_Clu_Vanz'] = data['CF_Clu_Vanz']
         self.clu_data['CF_Clu_RheostatLevel'] = data['CF_Clu_RheostatLevel']
         self.clu_data['CF_Clu_VanzDecimal'] = data['CF_Clu_VanzDecimal']
-    # def set_aeye(self): # 1060
-    #     self.data = {'custom_bsd_left':self.bsd_array[0], 'custom_bsd_right':self.bsd_array[1]}
-        
 
     def bridge(self):
         cur_time = time.time()
         while 1:
             try:
+                self.radar.data = True
                 #Send SCC to CCAN
                 SCC_data = self.SCC.recv(0)
                 if SCC_data != None:
@@ -187,12 +182,14 @@ class Bridge:
             except KeyboardInterrupt:
                 exit(0)
             except Exception as e:
-                print("Exception")    
+                self.radar.data = False
+                print("RADAR ERROR")    
                 print(e)
 
     def publisher(self):
         self.can_record.publish(self.can_record_data)
         self.can_switch.publish(self.can_switch_data)
+        self.radar_pub.publish(self.radar)
         
     def calculate_can(self):
         record = self.can_record_data.data

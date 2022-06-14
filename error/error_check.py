@@ -31,6 +31,7 @@ class Final:
                          self.LiDAR_result_Callback)
         
         rospy.Subscriber('/unstable_lane',Bool , self.lane_state_callback)
+        rospy.Subscriber('/radar',Bool , self.radar_callback)
 
         # kana modify
         self.gps_check = rospy.Publisher('/gps_accuracy', Point,  queue_size=1)
@@ -51,6 +52,7 @@ class Final:
         self.GPS_accuracy = 0
 
         self.unstable_lane = 0
+        self.radar = 0 # false
 
     def video0_Callback(self, msg):
         self.Video0_count += 1
@@ -74,6 +76,9 @@ class Final:
     def lane_state_callback(self, msg):
         self.unstable_lane = int(msg.data)
         # print(self.unstable_lane)
+
+    def radar_callback(self, msg):
+        self.radar = int(msg.data)
 
     def Video0_result_Callback(self, msg):
         self.Video0_result_count += 1
@@ -121,6 +126,11 @@ class Final:
         if self.Sbg_euler_count > 18:
             sensor_state.data.extend([False])
         elif self.Sbg_euler_count <= 18:
+            sensor_state.data.extend([True])
+        
+        if self.radar == 1: # RADAR true
+            sensor_state.data.extend([False])
+        elif self.radar == 0: # RADAR false
             sensor_state.data.extend([True])
 
         print("INS : {}Hz".format(self.Sbg_euler_count))
