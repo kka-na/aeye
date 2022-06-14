@@ -49,6 +49,7 @@ class Bridge:
         self.rpm = 0
         self.bsd_array = [0, 0]
         self.rcv_gear = 'P'
+        self.switch = [0,0,0]
         # self.rcv_wheel_speed = 1.0 #km/h
         # self.rcv_steer_angle = None
         # self.rcv_steer_tq = None
@@ -146,7 +147,6 @@ class Bridge:
         cur_time = time.time()
         while 1:
             try:
-                self.radar.data = True
                 #Send SCC to CCAN
                 SCC_data = self.SCC.recv(0)
                 if SCC_data != None:
@@ -177,7 +177,10 @@ class Bridge:
                         self.set_ELECT_GEAR(CCAN_data)
 
                     if time.time() - cur_time > 0.1:
-                        self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
+                        
+                        # self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
+                        self.can_record_data.data = self.calculate_can()
+                        self.can_switch_data.data = self.switch
                         # print('-------------')
                         self.publisher()
 
@@ -186,6 +189,8 @@ class Bridge:
                         CCAN_data = can.Message(arbitration_id=1060, data=msg, is_extended_id=False)
 
                         cur_time = time.time()
+                    
+                    self.radar.data = True
 
                     self.SCC.send(CCAN_data)
 
@@ -193,7 +198,10 @@ class Bridge:
                 exit(0)
             except Exception as e:
                 self.radar.data = False
-                print("RADAR ERROR")
+                if time.time() - cur_time > 0.1:
+                    self.radar_pub.publish(self.radar)
+                    cur_time = time.time()
+                    print("RADAR ERROR")
                 print(e)
 
     def publisher(self):
@@ -204,7 +212,7 @@ class Bridge:
     def calculate_can(self):
         record = self.can_record_data.data
         if self.mode == 1:
-            switch = [0, 0, 0]
+            self.switch = [0, 0, 0]
 
         record[0] = int(self.brake_pedal)
         record[1] = int(self.accel_pedal)
@@ -215,16 +223,16 @@ class Bridge:
 
 
         if self.brake_pedal > 10 and self.mode == 1:
-            switch[0] = 1
+            self.switch[0] = 1
         elif self.accel_pedal > 10 and self.mode == 1:
-            switch[1] = 1
+            self.switch[1] = 1
         elif abs(self.drvtq) > 160 and self.mode == 1:
-            switch[2] = 1
+            self.switch[2] = 1
 
-        # if 1 in switch:
+        # if 1 in self.switch:
         #     self.mode_pub.publish(0)
 
-        return record, switch
+        return record#, self.switch
 
     def set_sw_state(self, current, target):
         # if(self.sas_angle > 10):
