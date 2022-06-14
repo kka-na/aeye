@@ -1,5 +1,5 @@
 #!/bin/bash
-sh /home/aeye/Desktop/can_bridge.sh &
-sh /home/aeye/Desktop/can_record.sh & 
-sh /home/aeye/Desktop/lane_check.sh &
-sh /home/aeye/Desktop/vacs.sh
+sh /home/aeye/Documents/aeye/sh/can_bridge.sh &
+sh /home/aeye/Documents/aeye/sh/can_record.sh & 
+sh /home/aeye/Documents/aeye/sh/lane_check.sh &
+sh /home/aeye/Documents/aeye/sh/vacs.sh
