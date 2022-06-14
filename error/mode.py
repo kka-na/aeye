@@ -23,11 +23,9 @@ class ModeChanger:
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber('/estop', Int8, self.estop_callback)
-        # rospy.Subscriber('/acc', Int8, self.acc_callback)
-
-        #rospy.Subscriber('/unstable_lane', Bool, self.lane_state_callback)
+        rospy.Subscriber('/acc', Int8, self.acc_callback)
+        rospy.Subscriber('/unstable_lane', Bool, self.lane_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
-
         # rospy.Subscriber('/pos_state', Bool, self.pos_state_callback)
         # rospy.Subscriber('/sbg/ekf_nav',SbgEkfNav, self.ekf_nav)
 
@@ -58,14 +56,14 @@ class ModeChanger:
     def acc_callback(self, msg):
         self.acc = msg.data
 
-    def pos_state_callback(self, msg):
-        self.pos_state = msg.data # True of False
-    
-    # def lane_state_callback(self, msg):
-    #     self.unstable_lane = msg.data
-    
+    def lane_state_callback(self, msg):
+        self.unstable_lane = msg.data
+
     def lane_warn_callback(self, msg):
         self.lane_warning = msg.data
+
+    # def pos_state_callback(self, msg):
+    #     self.pos_state = msg.data # True of False
 
     def modePublisher(self):
         mode_msg = Int8()
@@ -75,38 +73,36 @@ class ModeChanger:
             mode_msg.data = 0
             self.button = 0
             print(self.button, "E-STOP")
-        # elif self.button == 0 and self.unstable_lane == True:
-        #     mode_msg.data = 0
-        #     self.button = 0
-        #     print(self.button, "lane state bad")
+        elif self.unstable_lane == True:
+            mode_msg.data = 0
+            self.button = 0
+            print(self.buttion, "Not Stable My lane")
         elif self.lane_warning == 2:
             mode_msg.data = 0
             self.button = 0
-            print(self.button, "lane departure")
         elif self.button == 1 and (1 in self.system_array or 1 in self.sensor_array):
             # time.sleep(2)
             mode_msg.data = 0
             self.button = 0
             print(self.button, "Error")
-        # elif self.button == 1 and (not self.acc):
-        #     # time.sleep(2)
-        #     mode_msg.data = 0
-        #     self.button = 0
-        #     print(self.button, "ACC Error")
+        elif self.button == 1 and (not self.acc):
+            # time.sleep(2)
+            mode_msg.data = 0
+            self.button = 0
+            print(self.button, "ACC Error")
         elif self.button == 1:
             mode_msg.data = 1
             print(self.button, "autopilot")
         elif self.button == 0:
             mode_msg.data = 0
             print(self.button, "manual")
-            
         self.mode_pub.publish(mode_msg)
 
 
 def main():
     rospy.init_node('ModeChanger')
     chgmod = ModeChanger()
-    rate = rospy.Rate(5)
+    rate = rospy.Rate(1)
     print("Ready to mode switch.")
     while not rospy.is_shutdown():
         # if # button clicked:
