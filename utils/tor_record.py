@@ -20,10 +20,10 @@ class TOR_Record:
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
         #AEB sub ...
 
-        self.tor_record = rospy.Publisher('/tor_record', Int8MultiArray, queue_size=1)
+        self.tor_record = rospy.Publisher('/tor_record', Int8, queue_size=1)
         
-        self.tor_record_array = Int8MultiArray()
-        self.tor_record_array.data = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.tor_record_array = Int8()
+        self.tor_record_array.data = 0
         # [drvtq, brake_pedal, accel_pedal, ui_button, e-stop, sensor error, system error, lane departure, AEB]
 
         self.mode = 0
@@ -35,6 +35,7 @@ class TOR_Record:
         self.lane_warning = 0
 
         self.r = rospy.Rate(10) # 10hz 
+        self.cnt = 0
 
         
     def can_switch_callback(self, msg):
@@ -57,25 +58,35 @@ class TOR_Record:
 
     def record(self):
         while not rospy.is_shutdown():
-            self.tor_record_array.data = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            if cnt > 100:
+                self.tor_record_array.data = 0
+                self.cnt = 0
             
             if self.mode == 1 and self.can_switch_array[0] == 1:
-                self.tor_record_array.data = [1, 0, 0, 0, 0, 0, 0, 0, 0]
-            elif self.mode == 1 and self.can_switch_array[1] == 1:
-                self.tor_record_array.data = [0, 1, 0, 0, 0, 0, 0, 0, 0]
-            elif self.mode == 1 and self.can_switch_array[2] == 1:
-                self.tor_record_array.data = [0, 0, 1, 0, 0, 0, 0, 0, 0]
-            elif self.mode == 1 and self.button == 0:
-                self.tor_record_array.data = [0, 0, 0, 1, 0, 0, 0, 0, 0]
-            elif self.mode == 1 and self.estop == 1:
-                self.tor_record_array.data = [0, 0, 0, 0, 1, 0, 0, 0, 0]
-            elif self.mode == 1 and 1 in self.sensor_array:
-                self.tor_record_array.data = [0, 0, 0, 0, 0, 1, 0, 0, 0]
-            elif self.mode == 1 and 1 in self.system_array:
-                self.tor_record_array.data = [0, 0, 0, 0, 0, 0, 1, 0, 0]
-            elif self.mode == 1 and lane_warning == 2:
-                self.tor_record_array.data = [0, 0, 0, 0, 0, 0, 0, 1, 0]
+                self.tor_record_array.data = 1
 
+            elif self.mode == 1 and self.can_switch_array[1] == 1:
+                self.tor_record_array.data = 2
+
+            elif self.mode == 1 and self.can_switch_array[2] == 1:
+                self.tor_record_array.data = 3
+
+            elif self.mode == 1 and self.button == 0:
+                self.tor_record_array.data = 4
+
+            elif self.mode == 1 and self.estop == 1:
+                self.tor_record_array.data = 5
+
+            elif self.mode == 1 and 1 in self.sensor_array:
+                self.tor_record_array.data = 6
+
+            elif self.mode == 1 and 1 in self.system_array:
+                self.tor_record_array.data = 7
+
+            elif self.mode == 1 and lane_warning == 2:
+                self.tor_record_array.data = 8
+
+            self.cnt += 1
             self.publisher()
             self.r.sleep()
 

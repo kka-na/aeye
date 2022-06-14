@@ -91,7 +91,7 @@ class Bridge:
         self.can_switch_data = Int8MultiArray()
         # [drvtq, brake_pedal, accel_pedal, ui_button, e-stop, sensor error, system error, lane departure, AEB]
         self.can_switch_data.data = [0, 0, 0]
-        
+
         self.radar = Bool()
         self.radar.data = False
 
@@ -176,7 +176,7 @@ class Bridge:
                     if CCAN_data.arbitration_id == 882:
                         self.set_ELECT_GEAR(CCAN_data)
 
-                    if time.time() - cur_time > 0.02:
+                    if time.time() - cur_time > 0.1:
                         self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
                         # print('-------------')
                         self.publisher()
@@ -254,7 +254,7 @@ class Bridge:
                      data['CF_Clu_CruiseSwMain'] = 1
                      self.prev_mode = self.mode
                 else:
-                     data['CF_Clu_CruiseSwMain'] = 0                  
+                     data['CF_Clu_CruiseSwMain'] = 0                
 
                 #Vel Change Test
                 if self.main_acc == 1 and self.mode == 1 and self.acc_mode == False:
