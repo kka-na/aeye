@@ -58,10 +58,10 @@ class TOR_Record:
 
     def record(self):
         while not rospy.is_shutdown():
-            if cnt > 100:
+            if self.cnt > 100:
                 self.tor_record_array.data = 0
                 self.cnt = 0
-            
+
             if self.mode == 1 and self.can_switch_array[0] == 1:
                 self.tor_record_array.data = 1
 

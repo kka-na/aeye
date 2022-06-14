@@ -6,7 +6,7 @@ import sys
 from sensor_msgs.msg import CompressedImage, PointCloud2
 from visualization_msgs.msg import MarkerArray
 from sbg_driver.msg import SbgEkfNav, SbgEkfEuler, SbgGpsPos
-from std_msgs.msg import Int8MultiArray, Float32MultiArray, Bool
+from std_msgs.msg import Int8MultiArray, Float32MultiArray, Bool, Int8
 # kana modify
 from geometry_msgs.msg import Point
 
