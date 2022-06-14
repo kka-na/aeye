@@ -1,6 +1,0 @@
-<launch>
-	<node name="bsd_pub.py" type="control/bsd_pub.py" output="screen"/>
-	<node name="mode_check.py" type="error/mode_check.py" output="screen"/>
-	<node name="estop_check.py" type="error/estop_check.py" output="screen"/>
-	<node name="error_check.py" type="error/error_check.py" output="screen"/>
-</launch>
