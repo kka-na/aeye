@@ -220,8 +220,8 @@ class Bridge:
         elif abs(self.drvtq) > 160 and self.mode == 1:
             switch[2] = 1
 
-        if 1 in switch:
-            self.mode_pub.publish(0)
+        # if 1 in switch:
+        #     self.mode_pub.publish(0)
 
         return record, switch
 

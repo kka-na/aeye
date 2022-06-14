@@ -79,7 +79,7 @@ class ModeChanger:
         #     mode_msg.data = 0
         #     self.button = 0
         #     print(self.button, "lane state bad")
-        elif self.lane_warning == 2:
+        elif self.button == 1 and self.lane_warning == 2:
             mode_msg.data = 0
             self.button = 0
             print(self.button, "lane departure")
@@ -88,6 +88,10 @@ class ModeChanger:
             mode_msg.data = 0
             self.button = 0
             print(self.button, "Error")
+        elif 1 in self.can_switch:
+            mode_msg.data = 0
+            self.button = 0
+            print(self.button, "can switch")
         # elif self.button == 1 and (not self.acc):
         #     # time.sleep(2)
         #     mode_msg.data = 0
