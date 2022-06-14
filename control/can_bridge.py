@@ -74,7 +74,7 @@ class Bridge:
         rospy.Subscriber('/mode', Int8, self.mode_set_callback)
         rospy.Subscriber('/target_vel', Int8, self.vel_set_callback)
         rospy.Subscriber("/BSD_check", Int8MultiArray, self.BSD_callback)
-        rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
+        # rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber("/estop", Int8, self.estop_callback)
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
@@ -232,11 +232,11 @@ class Bridge:
         # if 1 in self.switch:
         #     self.mode_pub.publish(0)
 
-        return record#, self.switch
+        return record #, self.switch
 
     def set_sw_state(self, current, target):
-        # if(self.sas_angle > 10):
-        #     target = min(target, target - int(abs(self.sas_angle)/20))
+        if(self.sas_angle > 10):
+            target = min(target, target - int(abs(self.sas_angle)/20)) # for kiapi 40
         if current < target:
             return 1
         elif current > target:
@@ -250,7 +250,7 @@ class Bridge:
         data = {'CF_Clu_CruiseSwState': 0.0, 'CF_Clu_CruiseSwMain': 0.0, 'CF_Clu_SldMainSW': 0.0, 'CF_Clu_ParityBit1': 0.0, 'CF_Clu_VanzDecimal': 0.0, 'CF_Clu_Vanz': 0.0, 'CF_Clu_SPEED_UNIT': 0.0, 'CF_Clu_DetentOut': 1.0, 'CF_Clu_RheostatLevel': 12.0, 'CF_Clu_CluInfo': 0.0, 'CF_Clu_AmpInfo': 0.0, 'CF_Clu_AliveCnt1': 0.0}
         while 1:
             try:
-                data['CF_Clu_AliveCnt1'] = _cnt[cnt%30] #INT OVERFLOW~!
+                data['CF_Clu_AliveCnt1'] = _cnt[cnt%30] #INT OVERFLOW -> clear 3000
                 data['CF_Clu_Vanz'] = self.clu_data['CF_Clu_Vanz']
                 data['CF_Clu_RheostatLevel'] = self.clu_data['CF_Clu_RheostatLevel'] 
                 data['CF_Clu_VanzDecimal'] = self.clu_data['CF_Clu_VanzDecimal'] 
@@ -259,17 +259,17 @@ class Bridge:
                     cnt = 0
 
                 #Mode Change Test
-                if self.mode != self.prev_mode :
-                     data['CF_Clu_CruiseSwMain'] = 1
-                     self.prev_mode = self.mode
+                if self.mode != self.prev_mode:
+                    data['CF_Clu_CruiseSwMain'] = 1
+                    self.prev_mode = self.mode
                 else:
-                     data['CF_Clu_CruiseSwMain'] = 0                
+                    data['CF_Clu_CruiseSwMain'] = 0
 
                 #Vel Change Test
                 if self.main_acc == 1 and self.mode == 1 and self.acc_mode == False:
                     data['CF_Clu_CruiseSwState'] = 2 if data['CF_Clu_CruiseSwState'] == 0 else 0
                 elif self.main_acc == 1 and self.mode == 1 and self.acc_mode == True:
-                    print(self.set_dis, self.vel)
+                    #print(self.set_dis, self.vel)
                     data['CF_Clu_CruiseSwState'] = int(self.set_sw_state(self.set_dis, self.vel)) if cnt % 5 == 0 else 0
                 else:
                     data['CF_Clu_CruiseSwState'] = 0
