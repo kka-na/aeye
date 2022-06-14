@@ -203,7 +203,8 @@ class Bridge:
         
     def calculate_can(self):
         record = self.can_record_data.data
-        switch = [0, 0, 0]
+        if self.mode == 1:
+            switch = [0, 0, 0]
 
         record[0] = int(self.brake_pedal)
         record[1] = int(self.accel_pedal)

@@ -13,13 +13,14 @@ class TOR_Record:
         rospy.init_node('TOR_RECORD', anonymous=False)
         rospy.Subscriber('/can_switch', Int8MultiArray, self.can_switch_callback)
         rospy.Subscriber('/mode', Int8, self.mode_callback)
-        rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
+        # rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber("/estop", Int8, self.estop_callback)
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
         #AEB sub ...
 
+        self.button = rospy.Publisher('/mode_set', Int8, queue_size=1)
         self.tor_record = rospy.Publisher('/tor_record', Int8, queue_size=1)
         
         self.tor_record_array = Int8()
@@ -28,7 +29,7 @@ class TOR_Record:
 
         self.mode = 0
         self.can_switch_array = []
-        self.button = 0
+        # self.button = 0
         self.estop = 0
         self.system_array = []
         self.sensor_array = []
@@ -42,8 +43,8 @@ class TOR_Record:
         self.can_switch_array = msg.data
     def mode_callback(self, msg):
         self.mode = msg.data
-    def mode_set_callback(self, msg):
-        self.button = msg.data
+    # def mode_set_callback(self, msg):
+    #     self.button = msg.data
     def estop_callback(self, msg):
         self.estop = msg.data
     def system_state_callback(self, msg):
@@ -58,21 +59,24 @@ class TOR_Record:
 
     def record(self):
         while not rospy.is_shutdown():
-            if self.cnt > 10:
+            if self.cnt > 30:
                 self.tor_record_array.data = 0
                 self.cnt = 0
 
             if self.mode == 1 and self.can_switch_array[0] == 1:
+                self.button.publish(0)
                 self.tor_record_array.data = 1
 
             elif self.mode == 1 and self.can_switch_array[1] == 1:
+                self.button.publish(0)
                 self.tor_record_array.data = 2
 
             elif self.mode == 1 and self.can_switch_array[2] == 1:
+                self.button.publish(0)
                 self.tor_record_array.data = 3
 
-            elif self.mode == 1 and self.button == 0:
-                self.tor_record_array.data = 4
+            # elif self.mode == 1 and self.button == 0:
+            #     self.tor_record_array.data = 4
 
             elif self.mode == 1 and self.estop == 1:
                 self.tor_record_array.data = 5

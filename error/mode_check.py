@@ -18,11 +18,13 @@ class ModeChanger:
 
         self.unstable_lane = False
         self.lane_warning = 0
+        self.can_switch = []
 
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber('/estop', Int8, self.estop_callback)
+        rospy.Subscriber('/can_switch', Int8MultiArray, self.can_switch_callback)
         # rospy.Subscriber('/acc', Int8, self.acc_callback)
 
         #rospy.Subscriber('/unstable_lane', Bool, self.lane_state_callback)
@@ -42,7 +44,10 @@ class ModeChanger:
     #     location.z = msg.altitude
 
     #     self.gps.publish(location)
-        
+    
+    def can_switch_callback(self, msg):
+        self.can_switch = msg.data
+
     def system_state_callback(self, msg):
         self.system_array = msg.data
 
@@ -75,31 +80,37 @@ class ModeChanger:
             mode_msg.data = 0
             self.button = 0
             print(self.button, "E-STOP")
+
         # elif self.button == 0 and self.unstable_lane == True:
         #     mode_msg.data = 0
         #     self.button = 0
         #     print(self.button, "lane state bad")
+
         elif self.button == 1 and self.lane_warning == 2:
             mode_msg.data = 0
             self.button = 0
             print(self.button, "lane departure")
+
         elif self.button == 1 and (1 in self.system_array or 1 in self.sensor_array):
             # time.sleep(2)
             mode_msg.data = 0
             self.button = 0
             print(self.button, "Error")
         elif 1 in self.can_switch:
-            mode_msg.data = 0
+            # mode_msg.data = 0
             self.button = 0
             print(self.button, "can switch")
+
         # elif self.button == 1 and (not self.acc):
         #     # time.sleep(2)
         #     mode_msg.data = 0
         #     self.button = 0
         #     print(self.button, "ACC Error")
+
         elif self.button == 1:
             mode_msg.data = 1
             print(self.button, "autopilot")
+            
         elif self.button == 0:
             mode_msg.data = 0
             print(self.button, "manual")
