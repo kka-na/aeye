@@ -53,8 +53,7 @@ class Bridge:
         # self.rcv_steer_angle = None
         # self.rcv_steer_tq = None
 
-        self.gear_map = {'P' : 0,'R' : 1, 'N' : 2, 'D' : 3}          
-
+        self.gear_map = {'P' : 0,'R' : 1, 'N' : 2, 'D' : 3}
 
         self.mode = 0
         self.prev_mode = 0
@@ -91,12 +90,10 @@ class Bridge:
 
         self.can_switch_data = Int8MultiArray()
         # [drvtq, brake_pedal, accel_pedal, ui_button, e-stop, sensor error, system error, lane departure, AEB]
-        self.can_switch_data.data = [0, 0, 0, 0, 0, 0, 0, 0, 0] 
-
+        self.can_switch_data.data = [0, 0, 0]
         
         self.radar = Bool()
         self.radar.data = False
-
 
     def mode_set_callback(self, msg):
         self.mode = msg.data

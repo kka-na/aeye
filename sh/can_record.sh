@@ -1,2 +1,2 @@
 #!/bin/bash
-cd /home/Documents/bag && rosbag record /mode /can_record /can_switch
+cd /home/Documents/bag && rosbag record /mode /can_record /tor_record
