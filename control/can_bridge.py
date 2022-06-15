@@ -237,7 +237,7 @@ class Bridge:
 
     def set_sw_state(self, current, target):
         if(self.sas_angle > 10):
-            target = min(target, target - int(abs(self.sas_angle)/20)) # for kiapi 40
+            target = min(target, target - int(abs(self.sas_angle)/10)) # for kiapi 40
         if current < target:
             return 1
         elif current > target:
