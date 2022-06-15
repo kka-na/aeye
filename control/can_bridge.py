@@ -254,13 +254,14 @@ class Bridge:
         if 0. < decimal < 0.5:
             vEgoRaw += decimal
 
-        standstill = vEgoRaw < 0.1
+        standstill = vEgoRaw < 0.05
 
         if standstill:
             if self.last_obj_dist == 0:
                 self.last_obj_dist = self.obj_dist
 
-            if abs(self.obj_dist - self.last_obj_dist) > 0.01:
+            print(abs(self.obj_dist - self.last_obj_dist))
+            if abs(self.obj_dist - self.last_obj_dist) > 1:
                 data['CF_Clu_CruiseSwState'] = 1 if cnt % 5 == 0 else 0
 
             # reset lead distnce after the car starts moving
