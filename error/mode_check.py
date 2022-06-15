@@ -81,39 +81,38 @@ class ModeChanger:
             self.button = 0
             print(self.button, "E-STOP")
 
-        # elif self.button == 0 and self.unstable_lane == True:
-        #     mode_msg.data = 0
-        #     self.button = 0
-        #     print(self.button, "lane state bad")
+        elif self.button == 1 and (1 in self.system_array or 1 in self.sensor_array):
+            mode_msg.data = 0
+            self.button = 0
+            print(self.button, "Error")
 
         elif self.button == 1 and self.lane_warning == 2:
             mode_msg.data = 0
             self.button = 0
-            print(self.button, "lane departure")
+            print(self.button, "Lane Departure")
 
-        elif self.button == 1 and (1 in self.system_array or 1 in self.sensor_array):
-            # time.sleep(2)
+        elif 1 in self.can_switch:
             mode_msg.data = 0
             self.button = 0
-            print(self.button, "Error")
-        elif 1 in self.can_switch:
-            # mode_msg.data = 0
-            self.button = 0
-            print(self.button, "can switch")
+            print(self.button, "CAN TOR")
 
         # elif self.button == 1 and (not self.acc):
         #     # time.sleep(2)
         #     mode_msg.data = 0
         #     self.button = 0
         #     print(self.button, "ACC Error")
+        # elif self.button == 0 and self.unstable_lane == True:
+        #     mode_msg.data = 0
+        #     self.button = 0
+        #     print(self.button, "lane state bad")
 
         elif self.button == 1:
             mode_msg.data = 1
-            print(self.button, "autopilot")
-            
+            print(self.button, "AUTOPILOT")
+
         elif self.button == 0:
             mode_msg.data = 0
-            print(self.button, "manual")
+            print(self.button, "MANUAL")
             
         self.mode_pub.publish(mode_msg)
 

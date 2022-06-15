@@ -25,7 +25,7 @@ class Activate_Signal_Interrupt_Handler:
 record:
 [brake_pedal, accel_pedal, sas_angle, gear, rpm, vel]
 switch:
-[drvtq, brake_pedal, accel_pedal, ui_button, e-stop, sensor error, system error, lane departure, AEB]
+[brake_pedal, accel_pedal, drvtq, e-stop, sensor error, system error, lane departure, AEB]
 '''
 class Bridge:
     def __init__(self):
@@ -50,9 +50,6 @@ class Bridge:
         self.bsd_array = [0, 0]
         self.rcv_gear = 'P'
         self.switch = [0,0,0]
-        # self.rcv_wheel_speed = 1.0 #km/h
-        # self.rcv_steer_angle = None
-        # self.rcv_steer_tq = None
 
         self.gear_map = {'P' : 0,'R' : 1, 'N' : 2, 'D' : 3}
 
@@ -71,10 +68,9 @@ class Bridge:
         ########ROS################
         rospy.init_node('Bridge_CAN', anonymous=False)
 
-        rospy.Subscriber('/mode', Int8, self.mode_set_callback)
+        rospy.Subscriber('/mode', Int8, self.mode_callback)
         rospy.Subscriber('/target_vel', Int8, self.vel_set_callback)
         rospy.Subscriber("/BSD_check", Int8MultiArray, self.BSD_callback)
-        # rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber("/estop", Int8, self.estop_callback)
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
@@ -96,7 +92,7 @@ class Bridge:
         self.radar = Bool()
         self.radar.data = False
 
-    def mode_set_callback(self, msg):
+    def mode_callback(self, msg):
         self.mode = msg.data
     def vel_set_callback(self, msg):
         self.vel = int(msg.data)
@@ -128,13 +124,13 @@ class Bridge:
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.brake_pedal = data['Brake_Pedal_Pos']
         self.accel_pedal = data['Accel_Pedal_Pos']
-    def set_WHL_SPD11(self, data): # 902/0x386
+    def set_WHL_SPD11(self, data): # 902
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.velocity_RL = data['WHL_SPD_RL']
         self.velocity_RR = data['WHL_SPD_RR']
         self.rcv_wheel_speed  = (self.velocity_RR + self.velocity_RL) * 0.5
         self.rpm = self.rcv_wheel_speed / (0.1885*self.WHEELSIZE)
-    def set_ELECT_GEAR(self, data): # 882/0x372
+    def set_ELECT_GEAR(self, data): # 882
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.rcv_gear = data['Elect_Gear_Shifter']
     def set_CLU11(self, data): #1265
@@ -158,7 +154,6 @@ class Bridge:
                     if SCC_id == 688:
                         self.set_SAS11(SCC_data)
                     self.CCAN.send(SCC_data)
-
                 #Send CCAN to SCC ( Except CLU11 )
                 CCAN_data =self.CCAN.recv(0)                
                 if CCAN_data != None:
@@ -181,7 +176,6 @@ class Bridge:
                         # self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
                         self.can_record_data.data = self.calculate_can()
                         self.can_switch_data.data = self.switch
-                        # print('-------------')
                         self.publisher()
 
                         data = {'custom_bsd_left':self.bsd_array[0], 'custom_bsd_right':self.bsd_array[1]}
@@ -189,9 +183,8 @@ class Bridge:
                         CCAN_data = can.Message(arbitration_id=1060, data=msg, is_extended_id=False)
 
                         cur_time = time.time()
-                    
+                
                     self.radar.data = True
-
                     self.SCC.send(CCAN_data)
 
             except KeyboardInterrupt:
@@ -210,9 +203,12 @@ class Bridge:
         self.radar_pub.publish(self.radar)
         
     def calculate_can(self):
+        cur_time = time.time()
         record = self.can_record_data.data
-        if self.mode == 1:
+    
+        if time.time() - cur_time > 1:
             self.switch = [0, 0, 0]
+            cur_time = time.time()
 
         record[0] = int(self.brake_pedal)
         record[1] = int(self.accel_pedal)
@@ -228,9 +224,6 @@ class Bridge:
             self.switch[1] = 1
         elif abs(self.drvtq) > 160 and self.mode == 1:
             self.switch[2] = 1
-
-        # if 1 in self.switch:
-        #     self.mode_pub.publish(0)
 
         return record #, self.switch
 
