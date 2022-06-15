@@ -66,6 +66,7 @@ class Bridge:
                         'CF_Clu_VanzDecimal' : 0}
 
         self.switch_cnt = 0
+        self.switch_on = False
         ########ROS################
         rospy.init_node('Bridge_CAN', anonymous=False)
 
@@ -204,13 +205,15 @@ class Bridge:
         self.radar_pub.publish(self.radar)
         
     def calculate_can(self):
-        record = self.can_record_data.data
-
-        self.switch_cnt += 1
+        record = self.can_record_data.data       
         
-        if self.switch_cnt > 10:
-            self.switch = [0, 0, 0]
-            self.switch_cnt = 0
+        if self.switch_on:
+            if self.switch_cnt >= 10:
+                self.switch = [0, 0, 0]
+                self.switch_cnt = 0
+                self.switch_on = False
+            else:
+                self.switch_cnt += 1 
 
         record[0] = int(self.brake_pedal)
         record[1] = int(self.accel_pedal)
@@ -222,10 +225,13 @@ class Bridge:
 
         if self.brake_pedal > 10 and self.mode == 1:
             self.switch[0] = 1
+            self.switch_on = True
         elif self.accel_pedal > 10 and self.mode == 1:
             self.switch[1] = 1
+            self.switch_on = True
         elif abs(self.drvtq) > 160 and self.mode == 1:
             self.switch[2] = 1
+            self.switch_on = True
 
         return record #, self.switch
 
