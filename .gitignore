@@ -4,4 +4,7 @@
 *.swp
 *~
 
+
 **/cereal/
+**/.DS_Store
+**/.vscode

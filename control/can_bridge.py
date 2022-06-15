@@ -59,6 +59,8 @@ class Bridge:
         self.prev_vel = 0
         self.main_acc = 0 #from SCC11  
         self.set_dis = 0 #from SCC11
+        self.obj_dist = 0 #from SCC11
+        self.last_obj_dist = 0 #from obj_dist 
         self.acc_mode = False #from SCC12
         self.sas_angle = 0 #from SAS11
         self.clu_data = {'CF_Clu_Vanz' : 0, 
@@ -113,6 +115,7 @@ class Bridge:
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.main_acc = data['MainMode_ACC']
         self.set_dis = data['VSetDis']
+        self.obj_dist = data['ACC_ObjDist']
     def set_SCC12(self, data): #1057
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.acc_mode = True if data['ACCMode'] == "enabled" else False
@@ -138,8 +141,8 @@ class Bridge:
     def set_CLU11(self, data): #1265
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.clu_data['CF_Clu_Vanz'] = data['CF_Clu_Vanz']
-        self.clu_data['CF_Clu_RheostatLevel'] = data['CF_Clu_RheostatLevel']
         self.clu_data['CF_Clu_VanzDecimal'] = data['CF_Clu_VanzDecimal']
+        self.clu_data['CF_Clu_RheostatLevel'] = data['CF_Clu_RheostatLevel']
 
     def bridge(self):
         cur_time = time.time()
@@ -245,6 +248,27 @@ class Bridge:
         elif current == target:
             return 0
 
+    def resume_scc(self, data, cnt):
+        vEgoRaw = self.clu_data['CF_Clu_Vanz'] #Update Ego_velocity
+        decimal = self.clu_data['CF_Clu_VanzDecimal'] 
+        if 0. < decimal < 0.5:
+            vEgoRaw += decimal
+
+        standstill = vEgoRaw < 0.1
+
+        if standstill:
+            if self.last_obj_dist == 0:
+                self.last_obj_dist = self.obj_dist
+
+            if abs(self.obj_dist - self.last_obj_dist) > 0.01:
+                data['CF_Clu_CruiseSwState'] = 1 if cnt % 5 == 0 else 0
+
+            # reset lead distnce after the car starts moving
+        elif self.last_obj_dist != 0:
+            self.last_obj_dist = 0
+
+        return data
+
     def send_clu(self):
         cnt = 0
         _cnt = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -275,6 +299,8 @@ class Bridge:
                 else:
                     data['CF_Clu_CruiseSwState'] = 0
 
+                #Spam CLU11 - resume SCC when preceding vehicle start moving
+                data = self.resume_scc(data, cnt)
 
                 msg = self.db.encode_message('CLU11', data)
                 can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
