@@ -203,12 +203,10 @@ class Bridge:
         self.radar_pub.publish(self.radar)
         
     def calculate_can(self):
-        cur_time = time.time()
         record = self.can_record_data.data
     
-        if time.time() - cur_time > 1:
+        if 1 in self.switch:
             self.switch = [0, 0, 0]
-            cur_time = time.time()
 
         record[0] = int(self.brake_pedal)
         record[1] = int(self.accel_pedal)
