@@ -7,8 +7,8 @@ from sbg_driver.msg import SbgEkfNav
 
 class ModeChanger:
     def __init__(self):
-        isClear = True
-
+        self.mode = 0
+        self.prev_mode = 0
         self.mode_set = 0
         self.tor = 0
 
@@ -17,6 +17,7 @@ class ModeChanger:
         self.mode_pub = rospy.Publisher("/mode", Int8, queue_size=1)
     
     def mode_set_callback(self, msg):
+        print(msg.data)
         self.mode_set = msg.data
 
     def tor_callback(self, msg):
@@ -25,7 +26,7 @@ class ModeChanger:
     
     def tor_print(self, type):
         if type==0:
-            print("Stanble")
+            print("Stable")
         elif type==1:
             print("TOR : Break Pedal")
         elif type == 2 :
@@ -46,11 +47,11 @@ class ModeChanger:
 
     def modePublisher(self):
         mode_msg = Int8()
-        
-        if self.mode_set == 1 and self.tor != 0 :
-            mode_msg.data = 0
+
+        if self.prev_mode == 1 and self.tor != 0: 
+            mode_msg.data = 0 
             self.mode_set = 0
-            tor_print(self.tor)
+            self.tor_print(self.tor)
 
         elif self.mode_set == 1:
             mode_msg.data = 1
@@ -59,7 +60,9 @@ class ModeChanger:
         elif self.mode_set == 0:
             mode_msg.data = 0
             print(self.mode_set, "MANUAL")
-            
+        else:
+            print("Else Case")
+        self.prev_mode = int(mode_msg.data)
         self.mode_pub.publish(mode_msg)
 
 

@@ -53,7 +53,7 @@ class Final:
         self.GPS_accuracy = 0
 
         self.unstable_lane = 0
-        self.radar = 1 # false
+        self.radar = 0 # false
         self.mode = 0
         self.test_lane = 0
 

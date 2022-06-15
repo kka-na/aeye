@@ -33,7 +33,9 @@ class TOR_Record:
         self.lane_warning = 0
 
         self.r = rospy.Rate(10) # 10hz 
-        self.cnt = 0
+
+        self.tor_on = False
+        self.tor_cnt = 0
 
         
     def can_switch_callback(self, msg):
@@ -54,38 +56,49 @@ class TOR_Record:
 
     def record(self):
         while not rospy.is_shutdown():
-            if self.cnt > 30:
-                self.tor_record_array.data = 0
-                self.cnt = 0
+            if self.tor_on:
+                if self.tor_cnt >= 30:
+                    self.tor_record_array.data = 0
+                    self.tor_cnt = 0
+                    self.tor_on = False
+                else:
+                    self.tor_cnt += 1
+
 
             if self.mode == 1 and self.can_switch_array[0] == 1:
                 # self.button.publish(0)
                 self.tor_record_array.data = 1
+                self.tor_on = True
 
             elif self.mode == 1 and self.can_switch_array[1] == 1:
                 # self.button.publish(0)
                 self.tor_record_array.data = 2
+                self.tor_on = True
 
             elif self.mode == 1 and self.can_switch_array[2] == 1:
                 # self.button.publish(0)
                 self.tor_record_array.data = 3
+                self.tor_on = True
 
             elif self.mode == 1 and self.estop == 1:
                 self.tor_record_array.data = 4
+                self.tor_on = True
 
             elif self.mode == 1 and 1 in self.sensor_array:
                 self.tor_record_array.data = 5
+                self.tor_on = True
 
             elif self.mode == 1 and 1 in self.system_array:
                 self.tor_record_array.data = 6
+                self.tor_on = True
 
             elif self.mode == 1 and self.lane_warning == 2:
                 self.tor_record_array.data = 7
+                self.tor_on = True
             
             # elif self.mode == 1 and AEB!!!:
             #     self.tor_record_array.data = 8
 
-            self.cnt += 1
             self.publisher()
             self.r.sleep()
 
