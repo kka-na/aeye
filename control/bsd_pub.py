@@ -41,7 +41,7 @@ class BSD:
 def main():
     rospy.init_node('BSD')
     b = BSD()
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(11)
     print("Ready to BSD CHECK.")
     while not rospy.is_shutdown():
         b.bsdPublisher()
