@@ -9,110 +9,56 @@ class ModeChanger:
     def __init__(self):
         isClear = True
 
-        self.system_array = []
-        self.sensor_array = []
-        self.button = 0
-        self.estop = 0
-        self.pos_state = False # normal , True is Error
-        self.acc = 0
+        self.mode_set = 0
+        self.tor = 0
 
-        self.unstable_lane = False
-        self.lane_warning = 0
-        self.can_switch = []
-
-        rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
-        rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
-        rospy.Subscriber('/estop', Int8, self.estop_callback)
-        rospy.Subscriber('/can_switch', Int8MultiArray, self.can_switch_callback)
-        # rospy.Subscriber('/acc', Int8, self.acc_callback)
-
-        #rospy.Subscriber('/unstable_lane', Bool, self.lane_state_callback)
-        rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
-
-        # rospy.Subscriber('/pos_state', Bool, self.pos_state_callback)
-        # rospy.Subscriber('/sbg/ekf_nav',SbgEkfNav, self.ekf_nav)
-
-
+        rospy.Subscriber('/tor', Int8, self.tor_callback)
         self.mode_pub = rospy.Publisher("/mode", Int8, queue_size=1)
-        # self.gps = rospy.Publisher("/gps", Vector3, queue_size=1)
-
-    # def ekf_nav(self, msg):
-    #     location = Vector3()
-    #     location.x = msg.latitude
-    #     location.y = msg.longitude
-    #     location.z = msg.altitude
-
-    #     self.gps.publish(location)
     
-    def can_switch_callback(self, msg):
-        self.can_switch = msg.data
-
-    def system_state_callback(self, msg):
-        self.system_array = msg.data
-
-    def sensor_state_callback(self, msg):
-        self.sensor_array = msg.data
-
     def mode_set_callback(self, msg):
-        self.button = msg.data
+        self.mode_set = msg.data
 
-    def estop_callback(self, msg):
-        self.estop = msg.data
+    def tor_callback(self, msg):
+        self.tor = msg.data
 
-    def acc_callback(self, msg):
-        self.acc = msg.data
-
-    def pos_state_callback(self, msg):
-        self.pos_state = msg.data # True of False
     
-    # def lane_state_callback(self, msg):
-    #     self.unstable_lane = msg.data
-    
-    def lane_warn_callback(self, msg):
-        self.lane_warning = msg.data
+    def tor_print(self, type):
+        if type==0:
+            print("Stanble")
+        elif type==1:
+            print("TOR : Break Pedal")
+        elif type == 2 :
+            print("TOR : Accel")
+        elif type == 3 :
+            print("TOR : HandleToq")
+        elif type == 4 :
+            print("TOR : E-Stop")
+        elif type == 5 :
+            print("TOR : Sensor Error")
+        elif type == 6 :
+            print("TOR : System Error")
+        elif type == 7 :
+            print("TOR : Lane Departure")
+        elif type == 8 :
+            print("TOR : AEB")
+
 
     def modePublisher(self):
         mode_msg = Int8()
         
-        if self.estop == 1:
-            #time.sleep(1)
+        if self.mode_set == 1 and self.tor != 0 :
             mode_msg.data = 0
-            self.button = 0
-            print(self.button, "E-STOP")
+            self.mode_set = 0
+            tor_print(self.tor)
 
-        elif self.button == 1 and (1 in self.system_array or 1 in self.sensor_array):
-            mode_msg.data = 0
-            self.button = 0
-            print(self.button, "Error")
-
-        elif self.button == 1 and self.lane_warning == 2:
-            mode_msg.data = 0
-            self.button = 0
-            print(self.button, "Lane Departure")
-
-        elif 1 in self.can_switch:
-            mode_msg.data = 0
-            self.button = 0
-            print(self.button, "CAN TOR")
-
-        # elif self.button == 1 and (not self.acc):
-        #     # time.sleep(2)
-        #     mode_msg.data = 0
-        #     self.button = 0
-        #     print(self.button, "ACC Error")
-        # elif self.button == 0 and self.unstable_lane == True:
-        #     mode_msg.data = 0
-        #     self.button = 0
-        #     print(self.button, "lane state bad")
-
-        elif self.button == 1:
+        elif self.mode_set == 1:
             mode_msg.data = 1
-            print(self.button, "AUTOPILOT")
+            print(self.mode_set, "AUTOPILOT")
 
-        elif self.button == 0:
+        elif self.mode_set == 0:
             mode_msg.data = 0
-            print(self.button, "MANUAL")
+            print(self.mode_set, "MANUAL")
             
         self.mode_pub.publish(mode_msg)
 
@@ -123,7 +69,6 @@ def main():
     rate = rospy.Rate(10)
     print("Ready to mode switch.")
     while not rospy.is_shutdown():
-        # if # button clicked:
         chgmod.modePublisher()
         rate.sleep()
     

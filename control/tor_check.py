@@ -20,7 +20,7 @@ class TOR_Record:
         #AEB sub ...
 
         self.button = rospy.Publisher('/mode_set', Int8, queue_size=1)
-        self.tor_record = rospy.Publisher('/tor_record', Int8, queue_size=1)
+        self.tor_record = rospy.Publisher('/tor', Int8, queue_size=1)
         
         self.tor_record_array = Int8()
         self.tor_record_array.data = 0
@@ -54,7 +54,7 @@ class TOR_Record:
 
     def record(self):
         while not rospy.is_shutdown():
-            if self.cnt > 10:
+            if self.cnt > 30:
                 self.tor_record_array.data = 0
                 self.cnt = 0
 
