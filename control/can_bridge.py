@@ -65,6 +65,7 @@ class Bridge:
                         'CF_Clu_RheostatLevel' : 0, 
                         'CF_Clu_VanzDecimal' : 0}
 
+        self.switch_cnt = 0
         ########ROS################
         rospy.init_node('Bridge_CAN', anonymous=False)
 
@@ -204,9 +205,12 @@ class Bridge:
         
     def calculate_can(self):
         record = self.can_record_data.data
-    
-        if 1 in self.switch:
+
+        self.switch_cnt += 1
+        
+        if self.switch_cnt > 10:
             self.switch = [0, 0, 0]
+            self.switch_cnt = 0
 
         record[0] = int(self.brake_pedal)
         record[1] = int(self.accel_pedal)
