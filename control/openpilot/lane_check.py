@@ -109,6 +109,10 @@ while not rospy.is_shutdown():
                 # else:
                 #     warnLane = 0
                 #     print("Right Stable")
+            
+            op_null.data = False
+            op_null_pub.publish(op_null)
+
         #If Lanelines doesn't work, 
         else: 
             # There is some Error
