@@ -56,7 +56,7 @@ while not rospy.is_shutdown():
         #print("state_1")
         #print(sm['modelV2'].laneLines)
         if sm['modelV2'].laneLines:
-            #print("state_2")
+            print("OP GOOD",sm['modelV2'].laneLines)
             for i, _ in enumerate(sm['modelV2'].laneLines):
                 temp[str(i)] = _
 
@@ -115,6 +115,7 @@ while not rospy.is_shutdown():
 
         #If Lanelines doesn't work, 
         else: 
+            print("OP BAD",sm['modelV2'].laneLines)
             # There is some Error
             op_null.data = True
             op_null_pub.publish(op_null)
