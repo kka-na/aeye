@@ -83,7 +83,6 @@ class Bridge:
 
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
-        self.mode_pub = rospy.Publisher('/mode_set', Int8, queue_size=1)
         self.radar_pub = rospy.Publisher('/radar', Bool, queue_size=1)
         
         self.can_record_data = Int16MultiArray()
@@ -286,8 +285,9 @@ class Bridge:
 
                 #Mode Change Test
                 if self.mode != self.prev_mode:
-                    data['CF_Clu_CruiseSwMain'] = 1
-                    self.prev_mode = self.mode
+                    if self.main_acc != self.mode: # Reverse Mode Change Prevent
+                        data['CF_Clu_CruiseSwMain'] = 1
+                        self.prev_mode = self.mode
                 else:
                     data['CF_Clu_CruiseSwMain'] = 0
 
