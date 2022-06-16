@@ -56,6 +56,7 @@ class Bridge:
             'MainMode_ACC':0,
             'VSetDis' : 0,
             'ACC_ObjDist' : 0}
+        self.obj_dist = 0
         self.last_obj_dist = 0 #from obj_dist 
         self.scc12_data  = {'ACCMode' : 0}
         self.sas11_data = {'SAS_Angle' :  0} #from SAS11
@@ -145,6 +146,7 @@ class Bridge:
     #Thread 1
     def bridge(self):
         cur_time = time.time()
+        bsd_time = time.time()
         while 1:
             try:
                 #Send SCC to CCAN
@@ -158,6 +160,11 @@ class Bridge:
                     if SCC_id == 688:
                         self.set_SAS11(SCC_data)
                     self.CCAN.send(SCC_data)
+                else:     #Publish Custom BSD Data
+                    if time.time() - bsd_time > 0.1:
+                        SCC_data = self.set_custom_bsd()
+                        self.CCAN.send(SCC_data)
+                        bsd_time = time.time()
                 #Send CCAN to SCC ( Except CLU11 )
 
 
@@ -182,9 +189,6 @@ class Bridge:
                         self.can_record_data.data = self.calculate_can()
                         self.can_switch_data.data = self.switch
                         self.publisher()
-
-                        #Publish Custom BSD Data
-                        CCAN_data = self.set_custom_bsd()
 
                         cur_time = time.time()
                 
@@ -260,15 +264,16 @@ class Bridge:
                 cnt = cnt + 1
                 if cnt >= 3000 :
                     cnt = 0
-
+                
                 #Mode Change Test 
                 data = self.mode_change(data)
 
                 #Vel Change Test
                 data = self.vel_change(data, cnt)
-
+                
                 #Spam CLU11 - resume SCC when preceding vehicle start moving
                 data = self.resume_scc(data, cnt)
+                
 
                 msg = self.db.encode_message('CLU11', data)
                 can_msg = can.Message(arbitration_id=0x4f1, data=msg, is_extended_id=False)
@@ -276,7 +281,7 @@ class Bridge:
             
             except KeyboardInterrupt:
                 exit(0)
-            except:
+            except :
                 print("CLU Exception")
             time.sleep(0.02)
     
@@ -297,6 +302,7 @@ class Bridge:
                 self.prev_mode = self.mode
         else:
             data['CF_Clu_CruiseSwMain'] = 0
+        return data
         
     def vel_change(self, data,cnt):
         if self.scc11_data['MainMode_ACC'] == 1 and self.mode == 1 and self.scc12_data['ACCMode']== False:
@@ -306,6 +312,7 @@ class Bridge:
             data['CF_Clu_CruiseSwState'] = int(self.set_sw_state(self.scc11_data['VSetDis'], self.vel)) if cnt % 5 == 0 else 0
         else:
             data['CF_Clu_CruiseSwState'] = 0
+        return data
     
     def resume_scc(self, data, cnt):
         vEgoRaw = self.clu_data['CF_Clu_Vanz'] #Update Ego_velocity
@@ -322,7 +329,7 @@ class Bridge:
             if abs(self.scc11_data['ACC_ObjDist']- self.last_obj_dist) > 1:
                 data['CF_Clu_CruiseSwState'] = 2 if cnt % 5 == 0 else 0
 
-            # reset lead distnce after the car starts moving
+        # reset lead distnce after the car starts moving
         elif self.last_obj_dist != 0:
             self.last_obj_dist = 0
 
