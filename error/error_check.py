@@ -120,11 +120,11 @@ class Final:
         # print("Wide Camera : {}Hz".format(self.Video1_count))
 
         if self.op_null == 1: # op_null true
-            sensor_state.data.extend([False])
-        elif self.op_null == 0: # op_null false
             sensor_state.data.extend([True])
+        elif self.op_null == 0: # op_null false
+            sensor_state.data.extend([False])
         
-        print("LKAS" : {}".format(self.op_null))
+        print("LKAS : {}".format(self.op_null))
 
         if self.LiDAR_points_count > 6:
             sensor_state.data.extend([False])
@@ -206,7 +206,7 @@ class Final:
 
         # ---
         # This is for Test  ( Have to Remove !!!!!! )
-        sensorstate.data = [0,not self.op_null,0,0,0,not self.radar]
+        sensorstate.data = [0,self.op_null,0,0,0,not self.radar]
         systemstate.data = [0,0,self.test_lane]
         # ---- 
         
