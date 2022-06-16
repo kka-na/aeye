@@ -133,7 +133,7 @@ class Final:
 
         print("LiDAR : {}Hz".format(self.LiDAR_points_count))
 
-        if self.GPS_error_type == 0 or self.FIX_error_type == 0:
+        if self.GPS_error_type == 0 and self.FIX_error_type == 0:
             sensor_state.data.extend([False])
         else:
             sensor_state.data.extend([True])
@@ -197,7 +197,7 @@ class Final:
 
     def talker(self, sensorstate, systemstate, gpsaccuracy):
         print("="*50)
-        print("Camera, LKAS, LiDAR, GPS, INS")
+        print("Camera, LKAS, LiDAR, GPS, INS, RADARv")
         print(sensorstate.data)
 
         print("Cam_result, LiDAR_result, Unstable Lane")
@@ -206,8 +206,8 @@ class Final:
 
         # ---
         # This is for Test  ( Have to Remove !!!!!! )
-        sensorstate.data = [0,self.op_null,0,0,0,not self.radar]
-        systemstate.data = [0,0,self.test_lane]
+        #sensorstate.data = [0,self.op_null,0,0,0,not self.radar]
+        #systemstate.data = [0,0,self.test_lane]
         # ---- 
         
         self.sensor_check.publish(sensorstate)
@@ -228,7 +228,7 @@ if __name__ == "__main__":
     print(" Check Start !")
     while not rospy.is_shutdown():
         try:
-            rospy.sleep(0.2)
+            rospy.sleep(1)
             signal.signal(signal.SIGINT, signal_handler)
             os.system('clear')
             mm.checker()
