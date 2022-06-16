@@ -1,17 +1,15 @@
-import queue
 import can
 import cantools
 import cankey
 
 import time
-import os
 import sys
 import signal
 
 import threading
 
 import rospy
-from std_msgs.msg import String, Float32, Int8, Bool
+from std_msgs.msg import Int8, Bool
 from std_msgs.msg import Int8MultiArray, Int16MultiArray
 
 class Activate_Signal_Interrupt_Handler:
@@ -31,45 +29,45 @@ switch:
 class Bridge:
     def __init__(self):
         #######CAN############
-        self.db = cantools.database.load_file(
-                '/home/aeye/Documents/aeye/control/hyundai_can.dbc')
-        self.CCAN = can.ThreadSafeBus(
-                interface='kvaser', channel=0, bitrate=500000)
-        self.SCC = can.ThreadSafeBus(
-                interface='kvaser', channel=1, bitrate=500000)
+        self.db = cantools.database.load_file( '/home/aeye/Documents/aeye/control/hyundai_can.dbc')
+        self.CCAN = can.ThreadSafeBus( interface='kvaser', channel=0, bitrate=500000)
+        self.SCC = can.ThreadSafeBus( interface='kvaser', channel=1, bitrate=500000)
         self.CCAN.set_filters(cankey.CCAN_filters)
         self.SCC.set_filters(cankey.SCC_filters)
 
         self.counter = 0
         self.WHEELSIZE = 0.432 #m
-        self.drvtq = 0
-        self.brake_pedal = 0
-        self.accel_pedal = 0
-        self.sas_angle = 0
+
+        self.e_ems11_data= {'Brake_Pedal_Pos':0, 
+                            'Accel_Pedal_Pos':0}
         self.rcv_wheel_speed  = 0
         self.rpm = 0
         self.bsd_array = [0, 0]
-        self.rcv_gear = 'P'
+        self.elect_gear_data = {'Elect_Gear_Shifter': 'P'}
         self.switch = [0,0,0]
-
         self.gear_map = {'P' : 0,'R' : 1, 'N' : 2, 'D' : 3}
 
         self.mode = 0
         self.prev_mode = 0
         self.vel = 0
         self.prev_vel = 0
-        self.main_acc = 0 #from SCC11  
-        self.set_dis = 0 #from SCC11
-        self.obj_dist = 0 #from SCC11
+        
+        self.scc11_data = {
+            'MainMode_ACC':0,
+            'VSetDis' : 0,
+            'ACC_ObjDist' : 0}
         self.last_obj_dist = 0 #from obj_dist 
-        self.acc_mode = False #from SCC12
-        self.sas_angle = 0 #from SAS11
+        self.scc12_data  = {'ACCMode' : 0}
+        self.sas11_data = {'SAS_Angle' :  0} #from SAS11
+        self.mdps11_data = {'CR_Mdps_DrvTq': 0}
         self.clu_data = {'CF_Clu_Vanz' : 0, 
                         'CF_Clu_RheostatLevel' : 0, 
                         'CF_Clu_VanzDecimal' : 0}
 
         self.switch_cnt = 0
         self.switch_on = False
+
+
         ########ROS################
         rospy.init_node('Bridge_CAN', anonymous=False)
 
@@ -95,6 +93,8 @@ class Bridge:
 
         self.radar = Bool()
         self.radar.data = False
+        ########ROS################
+
 
     def mode_callback(self, msg):
         self.mode = msg.data
@@ -113,37 +113,36 @@ class Bridge:
 
     def set_SCC11(self, data): #1056
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.main_acc = data['MainMode_ACC']
-        self.set_dis = data['VSetDis']
-        self.obj_dist = data['ACC_ObjDist']
+        self.scc11_data['MainMode_ACC'] = data['MainMode_ACC']
+        self.scc11_data['VSetDis'] = data['VSetDis']
+        self.scc11_data['ACC_ObjDist'] = data['ACC_ObjDist']
     def set_SCC12(self, data): #1057
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.acc_mode = True if data['ACCMode'] == "enabled" else False
+        self.scc12_data['ACCMode']= True if data['ACCMode'] == "enabled" else False
     def set_SAS11(self, data): #688
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.sas_angle = data['SAS_Angle']
+        self.sas11_data['SAS_Angle']  = data['SAS_Angle']
     def set_MDPS11(self, data): # 897
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.drvtq = data['CR_Mdps_DrvTq']
+        self.mdps11_data['CR_Mdps_DrvTq']= data['CR_Mdps_DrvTq']
     def set_E_EMS11(self, data): # 881
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.brake_pedal = data['Brake_Pedal_Pos']
-        self.accel_pedal = data['Accel_Pedal_Pos']
+        self.e_ems11_data['Brake_Pedal_Pos']= data['Brake_Pedal_Pos']
+        self.e_ems11_data['Accel_Pedal_Pos'] = data['Accel_Pedal_Pos']
     def set_WHL_SPD11(self, data): # 902
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.velocity_RL = data['WHL_SPD_RL']
-        self.velocity_RR = data['WHL_SPD_RR']
-        self.rcv_wheel_speed  = (self.velocity_RR + self.velocity_RL) * 0.5
+        self.rcv_wheel_speed  = (data['WHL_SPD_RL']+ data['WHL_SPD_RR']) * 0.5
         self.rpm = self.rcv_wheel_speed / (0.1885*self.WHEELSIZE)
     def set_ELECT_GEAR(self, data): # 882
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.rcv_gear = data['Elect_Gear_Shifter']
+        self.elect_gear_data['Elect_Gear_Shifter']= data['Elect_Gear_Shifter']
     def set_CLU11(self, data): #1265
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.clu_data['CF_Clu_Vanz'] = data['CF_Clu_Vanz']
         self.clu_data['CF_Clu_VanzDecimal'] = data['CF_Clu_VanzDecimal']
         self.clu_data['CF_Clu_RheostatLevel'] = data['CF_Clu_RheostatLevel']
 
+    #Thread 1
     def bridge(self):
         cur_time = time.time()
         while 1:
@@ -160,6 +159,8 @@ class Bridge:
                         self.set_SAS11(SCC_data)
                     self.CCAN.send(SCC_data)
                 #Send CCAN to SCC ( Except CLU11 )
+
+
                 CCAN_data =self.CCAN.recv(0)                
                 if CCAN_data != None:
                     if CCAN_data.arbitration_id == 1265:
@@ -177,15 +178,13 @@ class Bridge:
                         self.set_ELECT_GEAR(CCAN_data)
 
                     if time.time() - cur_time > 0.1:
-                        
                         # self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
                         self.can_record_data.data = self.calculate_can()
                         self.can_switch_data.data = self.switch
                         self.publisher()
 
-                        data = {'custom_bsd_left':self.bsd_array[0], 'custom_bsd_right':self.bsd_array[1]}
-                        msg = self.db.encode_message('aeye', data) #Custom AEye data for BSD
-                        CCAN_data = can.Message(arbitration_id=1060, data=msg, is_extended_id=False)
+                        #Publish Custom BSD Data
+                        CCAN_data = self.set_custom_bsd()
 
                         cur_time = time.time()
                 
@@ -201,6 +200,7 @@ class Bridge:
                     cur_time = time.time()
                     print("RADAR ERROR")
                 print(e)
+
 
     def publisher(self):
         self.can_record.publish(self.can_record_data)
@@ -218,58 +218,35 @@ class Bridge:
             else:
                 self.switch_cnt += 1 
 
-        record[0] = int(self.brake_pedal)
-        record[1] = int(self.accel_pedal)
-        record[2] = int(self.sas_angle)
-        record[3] = self.gear_map[str(self.rcv_gear)]
+        record[0] = int(self.e_ems11_data['Brake_Pedal_Pos'])
+        record[1] = int(self.e_ems11_data['Accel_Pedal_Pos'])
+        record[2] = int(self.sas11_data['SAS_Angle'])
+        record[3] = self.gear_map[str(self.elect_gear_data['Elect_Gear_Shifter'])]
         record[4] = int(self.rpm)
         record[5] = int(self.rcv_wheel_speed)
 
 
-        if self.brake_pedal > 10 and self.mode == 1:
+        if self.e_ems11_data['Brake_Pedal_Pos'] > 10 and self.mode == 1:
             self.switch[0] = 1
             self.switch_on = True
-        elif self.accel_pedal > 10 and self.mode == 1:
+        elif self.e_ems11_data['Accel_Pedal_Pos'] > 10 and self.mode == 1:
             self.switch[1] = 1
             self.switch_on = True
-        elif abs(self.drvtq) > 160 and self.mode == 1:
+        elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 160 and self.mode == 1:
             self.switch[2] = 1
             self.switch_on = True
 
         return record #, self.switch
 
-    def set_sw_state(self, current, target):
-        if(self.sas_angle > 10):
-            target = min(target, target - int(abs(self.sas_angle)/10)) # for kiapi 40
-        if current < target:
-            return 1
-        elif current > target:
-            return 2
-        elif current == target:
-            return 0
+    def set_custom_bsd(self):
+        data = {'custom_bsd_left':self.bsd_array[0], 'custom_bsd_right':self.bsd_array[1]}
+        msg = self.db.encode_message('aeye', data) #Custom AEye data for BSD
+        can_msg = can.Message(arbitration_id=1060, data=msg, is_extended_id=False)
+        return can_msg
 
-    def resume_scc(self, data, cnt):
-        vEgoRaw = self.clu_data['CF_Clu_Vanz'] #Update Ego_velocity
-        decimal = self.clu_data['CF_Clu_VanzDecimal'] 
-        if 0. < decimal < 0.5:
-            vEgoRaw += decimal
 
-        standstill = vEgoRaw < 0.05
 
-        if standstill:
-            if self.last_obj_dist == 0:
-                self.last_obj_dist = self.obj_dist
-
-            print(abs(self.obj_dist - self.last_obj_dist))
-            if abs(self.obj_dist - self.last_obj_dist) > 1:
-                data['CF_Clu_CruiseSwState'] = 1 if cnt % 5 == 0 else 0
-
-            # reset lead distnce after the car starts moving
-        elif self.last_obj_dist != 0:
-            self.last_obj_dist = 0
-
-        return data
-
+    #Thread 2
     def send_clu(self):
         cnt = 0
         _cnt = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -284,22 +261,11 @@ class Bridge:
                 if cnt >= 3000 :
                     cnt = 0
 
-                #Mode Change Test
-                if self.mode != self.prev_mode:
-                    if self.main_acc != self.mode: # Reverse Mode Change Prevent
-                        data['CF_Clu_CruiseSwMain'] = 1
-                        self.prev_mode = self.mode
-                else:
-                    data['CF_Clu_CruiseSwMain'] = 0
+                #Mode Change Test 
+                data = self.mode_change(data)
 
                 #Vel Change Test
-                if self.main_acc == 1 and self.mode == 1 and self.acc_mode == False:
-                    data['CF_Clu_CruiseSwState'] = 2 if data['CF_Clu_CruiseSwState'] == 0 else 0
-                elif self.main_acc == 1 and self.mode == 1 and self.acc_mode == True:
-                    #print(self.set_dis, self.vel)
-                    data['CF_Clu_CruiseSwState'] = int(self.set_sw_state(self.set_dis, self.vel)) if cnt % 5 == 0 else 0
-                else:
-                    data['CF_Clu_CruiseSwState'] = 0
+                data = self.vel_change(data, cnt)
 
                 #Spam CLU11 - resume SCC when preceding vehicle start moving
                 data = self.resume_scc(data, cnt)
@@ -313,6 +279,55 @@ class Bridge:
             except:
                 print("CLU Exception")
             time.sleep(0.02)
+    
+    def set_sw_state(self, current, target):
+        if(self.sas11_data['SAS_Angle'] > 10):
+            target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/10)) # for kiapi 40
+        if current < target:
+            return 1
+        elif current > target:
+            return 2
+        elif current == target:
+            return 0
+    
+    def mode_change(self, data):
+        if self.mode != self.prev_mode:
+            if self.scc11_data['MainMode_ACC'] != self.mode: # Reverse Mode Change Prevent
+                data['CF_Clu_CruiseSwMain'] = 1
+                self.prev_mode = self.mode
+        else:
+            data['CF_Clu_CruiseSwMain'] = 0
+        
+    def vel_change(self, data,cnt):
+        if self.scc11_data['MainMode_ACC'] == 1 and self.mode == 1 and self.scc12_data['ACCMode']== False:
+            data['CF_Clu_CruiseSwState'] = 2 if data['CF_Clu_CruiseSwState'] == 0 else 0
+        elif self.scc11_data['MainMode_ACC'] == 1 and self.mode == 1 and self.scc12_data['ACCMode']== True:
+            #print(self.scc11_data['VSetDis'], self.vel)
+            data['CF_Clu_CruiseSwState'] = int(self.set_sw_state(self.scc11_data['VSetDis'], self.vel)) if cnt % 5 == 0 else 0
+        else:
+            data['CF_Clu_CruiseSwState'] = 0
+    
+    def resume_scc(self, data, cnt):
+        vEgoRaw = self.clu_data['CF_Clu_Vanz'] #Update Ego_velocity
+        decimal = self.clu_data['CF_Clu_VanzDecimal'] 
+        if 0. < decimal < 0.5:
+            vEgoRaw += decimal
+
+        standstill = vEgoRaw < 0.05
+
+        if standstill:
+            if self.last_obj_dist == 0:
+                self.last_obj_dist = self.obj_dist
+
+            if abs(self.scc11_data['ACC_ObjDist']- self.last_obj_dist) > 1:
+                data['CF_Clu_CruiseSwState'] = 1 if cnt % 5 == 0 else 0
+
+            # reset lead distnce after the car starts moving
+        elif self.last_obj_dist != 0:
+            self.last_obj_dist = 0
+
+        return data
+
 
 if __name__ == '__main__':
     Activate_Signal_Interrupt_Handler()
