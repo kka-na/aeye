@@ -18,8 +18,8 @@ class Final:
 
         rospy.Subscriber('/gmsl_camera/dev/video0/compressed',
                          CompressedImage, self.video0_Callback)
-        rospy.Subscriber('/gmsl_camera/dev/video1/compressed',
-                         CompressedImage, self.video1_Callback)
+        # rospy.Subscriber('/gmsl_camera/dev/video1/compressed',
+        #                  CompressedImage, self.video1_Callback)
         rospy.Subscriber('/os_cloud_node/points', PointCloud2,
                          self.LiDAR_points_Callback)
         rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.sbg_ekf_Callback)
@@ -32,6 +32,9 @@ class Final:
         
         rospy.Subscriber('/unstable_lane',Bool , self.lane_state_callback)
         rospy.Subscriber('/radar',Bool , self.radar_callback)
+        rospy.Subscriber('/op_null', Bool, self.op_null_callback)
+
+
         rospy.Subscriber('/mode', Int8, self.mode_callback)
 
         # kana modify
@@ -42,7 +45,7 @@ class Final:
             '/system_state', Int8MultiArray, queue_size=1)
 
         self.Video0_count = 0
-        self.Video1_count = 0
+        # self.Video1_count = 0
         self.LiDAR_points_count = 0
         self.Sbg_euler_count = 0
         self.Video0_result_count = 0
@@ -54,6 +57,7 @@ class Final:
 
         self.unstable_lane = 0
         self.radar = 0 # false
+        self.op_null = 0 # false
         self.mode = 0
         self.test_lane = 0
 
@@ -63,8 +67,8 @@ class Final:
     def video0_Callback(self, msg):
         self.Video0_count += 1
 
-    def video1_Callback(self, msg):
-        self.Video1_count += 1
+    # def video1_Callback(self, msg):
+    #     self.Video1_count += 1
 
     def LiDAR_points_Callback(self, msg):
         self.LiDAR_points_count += 1
@@ -85,6 +89,9 @@ class Final:
 
     def radar_callback(self, msg):
         self.radar = int(msg.data)
+    
+    def op_null_callback(self, msg):
+        self.op_null = int(msg.data)
 
     def Video0_result_Callback(self, msg):
         self.Video0_result_count += 1
@@ -103,14 +110,21 @@ class Final:
         else:
             sensor_state.data.extend([True])
 
-        print("Narrow Camera : {}Hz".format(self.Video0_count))
+        print("Camera : {}Hz".format(self.Video0_count))
 
-        if self.Video1_count > 23:
+        # if self.Video1_count > 23:
+        #     sensor_state.data.extend([False])
+        # else:
+        #     sensor_state.data.extend([True])
+
+        # print("Wide Camera : {}Hz".format(self.Video1_count))
+
+        if self.op_null == 1: # op_null true
             sensor_state.data.extend([False])
-        else:
+        elif self.op_null == 0: # op_null false
             sensor_state.data.extend([True])
-
-        print("Wide Camera : {}Hz".format(self.Video1_count))
+        
+        print("LKAS" : {}".format(self.op_null))
 
         if self.LiDAR_points_count > 6:
             sensor_state.data.extend([False])
@@ -124,7 +138,7 @@ class Final:
         else:
             sensor_state.data.extend([True])
 
-        #print("GPS : {}Hz".format(self.IMU_temp_count))
+        print("GPS : {}, {}".format(self.GPS_error_type, self.FIX_error_type))
 
         gps_accuracy.x = not self.GPS_error_type
         gps_accuracy.y = self.GPS_accuracy
@@ -134,13 +148,17 @@ class Final:
         elif self.Sbg_euler_count <= 18:
             sensor_state.data.extend([True])
         
+        print("INS : {}Hz".format(self.Sbg_euler_count))
+
         if self.radar == 1: # RADAR true
             sensor_state.data.extend([False])
         elif self.radar == 0: # RADAR false
             sensor_state.data.extend([True])
 
-        print("INS : {}Hz".format(self.Sbg_euler_count))
+        print("Radar : {}".format(self.radar))
 
+
+        #System Error Check
         if self.Video0_result_count > 20:
             system_state.data.extend([False])
         else:
@@ -163,12 +181,12 @@ class Final:
             system_state.data.extend([False])
             self.test_lane = 0
 
-        # print("LiDAR result : {}Hz".format(self.LiDAR_result_count))
 
         self.Video0_count = 0
-        self.Video1_count = 0
+        # self.Video1_count = 0
         self.LiDAR_points_count = 0
         self.Sbg_euler_count = 0
+
         self.Video0_result_count = 0
         self.LiDAR_result_count = 0
         # kana modify
@@ -179,15 +197,18 @@ class Final:
 
     def talker(self, sensorstate, systemstate, gpsaccuracy):
         print("="*50)
-        print("Camera0, Camera1, LiDAR, GPS, INS")
+        print("Camera, LKAS, LiDAR, GPS, INS")
         print(sensorstate.data)
 
-        print("Cam_result, LiDAR_result")
+        print("Cam_result, LiDAR_result, Unstable Lane")
         print(systemstate.data)
 
 
-        sensorstate.data = [0,0,0,0,0,not self.radar]
+        # ---
+        # This is for Test  ( Have to Remove !!!!!! )
+        sensorstate.data = [0,not self.op_null,0,0,0,not self.radar]
         systemstate.data = [0,0,self.test_lane]
+        # ---- 
         
         self.sensor_check.publish(sensorstate)
         self.system_check.publish(systemstate)

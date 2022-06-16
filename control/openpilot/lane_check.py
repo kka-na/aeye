@@ -25,6 +25,12 @@ W =1928//2
 
 lane_state_pub = rospy.Publisher('/unstable_lane', Bool, queue_size=1)
 lane_warn_pub = rospy.Publisher('/lane_warn', Int8, queue_size=1)
+
+#for Openpilot Error Checking
+op_null_pub = rospy.Publisher('/op_null', Bool, queue_size=1)
+op_null=Bool()
+op_null.data = False
+
 rospy.init_node('laneline', anonymous=True)
 rate = rospy.Rate(5)
 
@@ -103,7 +109,12 @@ while not rospy.is_shutdown():
                 # else:
                 #     warnLane = 0
                 #     print("Right Stable")
-                
+        #If Lanelines doesn't work, 
+        else: 
+            # There is some Error
+            op_null.data = True
+            op_null_pub.publish(op_null)
+
     lane_state_pub.publish(onLane)
     lane_warn_pub.publish(warnLane)
     rate.sleep()
