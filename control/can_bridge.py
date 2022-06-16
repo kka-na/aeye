@@ -320,7 +320,7 @@ class Bridge:
                 self.last_obj_dist = self.obj_dist
 
             if abs(self.scc11_data['ACC_ObjDist']- self.last_obj_dist) > 1:
-                data['CF_Clu_CruiseSwState'] = 1 if cnt % 5 == 0 else 0
+                data['CF_Clu_CruiseSwState'] = 2 if cnt % 5 == 0 else 0
 
             # reset lead distnce after the car starts moving
         elif self.last_obj_dist != 0:
