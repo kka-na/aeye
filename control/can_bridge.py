@@ -64,6 +64,8 @@ class Bridge:
         self.clu_data = {'CF_Clu_Vanz' : 0, 
                         'CF_Clu_RheostatLevel' : 0, 
                         'CF_Clu_VanzDecimal' : 0}
+        self.lkas11_data = {'CF_Lkas_LdwsSysState' : 0}
+        
 
         self.switch_cnt = 0
         self.switch_on = False
@@ -83,7 +85,8 @@ class Bridge:
 
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
-        self.radar_pub = rospy.Publisher('/radar', Bool, queue_size=1)
+        self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
+        self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
         
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
@@ -94,7 +97,8 @@ class Bridge:
 
         self.radar = Bool()
         self.radar.data = False
-        ########ROS################
+        self.lkas = Bool()
+        self.lkas.data = False
 
 
     def mode_callback(self, msg):
@@ -142,6 +146,9 @@ class Bridge:
         self.clu_data['CF_Clu_Vanz'] = data['CF_Clu_Vanz']
         self.clu_data['CF_Clu_VanzDecimal'] = data['CF_Clu_VanzDecimal']
         self.clu_data['CF_Clu_RheostatLevel'] = data['CF_Clu_RheostatLevel']
+    def set_LKAS11(self, data): # 832
+        data = self.db.decode_message(data.arbitration_id, data.data)
+        self.lkas11_data['CF_Lkas_LdwsSysState'] = data['CF_Lkas_LdwsSysState']
 
     #Thread 1
     def bridge(self):
@@ -183,6 +190,12 @@ class Bridge:
                         self.set_WHL_SPD11(CCAN_data)
                     if CCAN_data.arbitration_id == 882:
                         self.set_ELECT_GEAR(CCAN_data)
+                    if CCAN_data.arbitration_id == 832:
+                        self.set_LKAS11(CCAN_data)
+                        if self.lkas11_data['CF_Lkas_LdwsSysState'] == 0: # HAVE TO TEST PLZ CHANGE NUMBER 
+                            self.lkas.data = False
+                        else:
+                            self.lkas.data = True
 
                     if time.time() - cur_time > 0.1:
                         # self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
@@ -200,7 +213,7 @@ class Bridge:
             except Exception as e:
                 self.radar.data = False
                 if time.time() - cur_time > 0.1:
-                    self.radar_pub.publish(self.radar)
+                    self.radar_state.publish(self.radar)
                     cur_time = time.time()
                     print("RADAR ERROR")
                 print(e)
@@ -209,7 +222,8 @@ class Bridge:
     def publisher(self):
         self.can_record.publish(self.can_record_data)
         self.can_switch.publish(self.can_switch_data)
-        self.radar_pub.publish(self.radar)
+        self.radar_state.publish(self.radar)
+        self.lkas_state.publish(self.lkas)
         
     def calculate_can(self):
         record = self.can_record_data.data       

@@ -15,34 +15,26 @@ class Final:
     def __init__(self):
 
         rospy.init_node('sensor_check', anonymous=True)
-
-        rospy.Subscriber('/gmsl_camera/dev/video0/compressed',
-                         CompressedImage, self.video0_Callback)
         # rospy.Subscriber('/gmsl_camera/dev/video1/compressed',
         #                  CompressedImage, self.video1_Callback)
-        rospy.Subscriber('/os_cloud_node/points', PointCloud2,
-                         self.LiDAR_points_Callback)
+        rospy.Subscriber('/gmsl_camera/dev/video0/compressed', CompressedImage, self.video0_Callback)
+        rospy.Subscriber('/os_cloud_node/points', PointCloud2, self.LiDAR_points_Callback)
         rospy.Subscriber('/sbg/ekf_euler', SbgEkfEuler, self.sbg_ekf_Callback)
         rospy.Subscriber('/sbg/gps_pos', SbgGpsPos, self.GPS_pos_Callback)
         rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.EKF_nav_Callback)
-        rospy.Subscriber('/Camera/Front60/od_bbox',
-                         Float32MultiArray, self.Video0_result_Callback)
-        rospy.Subscriber('/pillar_marker_array', MarkerArray,
-                         self.LiDAR_result_Callback)
-        
+        rospy.Subscriber('/Camera/Front60/od_bbox', Float32MultiArray, self.Video0_result_Callback)
+        rospy.Subscriber('/pillar_marker_array', MarkerArray, self.LiDAR_result_Callback)
         rospy.Subscriber('/unstable_lane',Bool , self.lane_state_callback)
         rospy.Subscriber('/radar',Bool , self.radar_callback)
-        rospy.Subscriber('/op_null', Bool, self.op_null_callback)
-
-
+        rospy.Subscriber('/lkas',Bool , self.lkas_callback)
+        # rospy.Subscriber('/op_null', Bool, self.op_null_callback)
+        
         rospy.Subscriber('/mode', Int8, self.mode_callback)
 
         # kana modify
         self.gps_check = rospy.Publisher('/gps_accuracy', Point,  queue_size=1)
-        self.sensor_check = rospy.Publisher(
-            '/sensor_state', Int8MultiArray, queue_size=1)
-        self.system_check = rospy.Publisher(
-            '/system_state', Int8MultiArray, queue_size=1)
+        self.sensor_check = rospy.Publisher('/sensor_state', Int8MultiArray, queue_size=1)
+        self.system_check = rospy.Publisher('/system_state', Int8MultiArray, queue_size=1)
 
         self.Video0_count = 0
         # self.Video1_count = 0
@@ -57,7 +49,8 @@ class Final:
 
         self.unstable_lane = 0
         self.radar = 0 # false
-        self.op_null = 0 # false
+        self.lkas = False
+        # self.op_null = 0 # false
         self.mode = 0
         self.test_lane = 0
 
@@ -90,8 +83,11 @@ class Final:
     def radar_callback(self, msg):
         self.radar = int(msg.data)
     
-    def op_null_callback(self, msg):
-        self.op_null = int(msg.data)
+    # def op_null_callback(self, msg):
+    #     self.op_null = int(msg.data)
+
+    def lkas_callback(self, msg):
+        self.lkas = msg.data
 
     def Video0_result_Callback(self, msg):
         self.Video0_result_count += 1
@@ -119,12 +115,16 @@ class Final:
 
         # print("Wide Camera : {}Hz".format(self.Video1_count))
 
-        if self.op_null == 1: # op_null true
+        # if self.op_null == 1: # op_null true
+        #     sensor_state.data.extend([True])
+        # elif self.op_null == 0: # op_null false
+        #     sensor_state.data.extend([False])
+        if not self.lkas: # lkas False == openpilot Fault
             sensor_state.data.extend([True])
-        elif self.op_null == 0: # op_null false
+        elif self.lkas:
             sensor_state.data.extend([False])
         
-        print("LKAS : {}".format(self.op_null))
+        print("LKAS : {}".format(self.lkas))
 
         if self.LiDAR_points_count > 6:
             sensor_state.data.extend([False])
