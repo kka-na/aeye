@@ -6,6 +6,6 @@ export ROS_MASTER_URI="http://192.168.101.1:11311"
 export ROS_HOSTNAME=192.168.101.6
 export ZMQ=1
 
-sh /home/aeye/Documents/aeye/sh/can_record.sh & 
-sh /home/aeye/Documents/aeye/sh/lane_check.sh &
-sh /home/aeye/Documents/aeye/sh/vacs.sh
+sh /home/aeye/Documents/aeye/sh/NUC/can_record.sh & 
+sh /home/aeye/Documents/aeye/sh/NUC/lane_check.sh &
+sh /home/aeye/Documents/aeye/sh/NUC/vacs.sh

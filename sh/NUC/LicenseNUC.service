@@ -1,10 +1,11 @@
 # /etc/systemd/system/LicenseNUC.service
 [Unit]
-Description=Ros Init Daemon
+Description=ROS, CAN Init Daemon
 
 [Service]
 Type=simple
 ExecStart=/home/aeye/Documents/aeye/sh/NUC/LicenseNUC_bridge.sh
+#ExecStart=/home/aeye/Documents/aeye/sh/NUC/test.sh
 
 [Install]
 WantedBy=multi-user.target

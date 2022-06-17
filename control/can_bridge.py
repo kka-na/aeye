@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/home/aeye/.local/lib/python3.8/site-packages')
+
 import can
 import cantools
 import cankey
@@ -376,4 +379,3 @@ if __name__ == '__main__':
         sys.exit(e)
     
     rospy.spin()
-
