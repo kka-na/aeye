@@ -9,9 +9,9 @@ sleep 3
 cd /home/inha/catkin_ws &
 roscore &
 
-sleep 5
-#sh /home/inha/Desktop/sensors &
-#sh /home/inha/Desktop/perceptions &
+sleep 20
+sh /home/inha/Desktop/sensors &
+sh /home/inha/Desktop/perceptions &
 sh /home/inha/aeye/sh/NUVO/bsd_pub.sh &
 sh /home/inha/aeye/sh/NUVO/error_check.sh &
 sh /home/inha/aeye/sh/NUVO/estop_check.sh &
