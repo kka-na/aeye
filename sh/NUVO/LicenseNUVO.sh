@@ -2,16 +2,18 @@
 source /opt/ros/melodic/setup.bash
 source /home/inha/catkin_ws/devel/setup.bash
 
-export ROS_MASTER_URI=""
-export ROS_HOSTNAME=
+export ROS_MASTER_URI="http://192.168.101.1:11311"
+export ROS_HOSTNAME=192.168.101.1
 
 sleep 3
-cd /home/inha/catkin_ws
-roscore
+cd /home/inha/catkin_ws &
+roscore &
 
 sleep 5
-sh /home/inha/aeye/sh/bsd_pub.sh &
-sh /home/inha/aeye/sh/error_check.sh &
-sh /home/inha/aeye/sh/estop_check.sh &
-sh /home/inha/aeye/sh/mode_check.sh &
-sh /home/inha/aeye/sh/tor_check.sh
+#sh /home/inha/Desktop/sensors &
+#sh /home/inha/Desktop/perceptions &
+sh /home/inha/aeye/sh/NUVO/bsd_pub.sh &
+sh /home/inha/aeye/sh/NUVO/error_check.sh &
+sh /home/inha/aeye/sh/NUVO/estop_check.sh &
+sh /home/inha/aeye/sh/NUVO/mode_check.sh &
+sh /home/inha/aeye/sh/NUVO/tor_check.sh
