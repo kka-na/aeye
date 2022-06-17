@@ -64,11 +64,13 @@ class Bridge:
         self.clu_data = {'CF_Clu_Vanz' : 0, 
                         'CF_Clu_RheostatLevel' : 0, 
                         'CF_Clu_VanzDecimal' : 0}
-        self.lkas11_data = {'CF_Lkas_LdwsSysState' : 0}
+        self.lkas11_data = {'CF_Lkas_MsgCount' : 0}
         
-
         self.switch_cnt = 0
         self.switch_on = False
+
+        self.prev_lkas_chksum = 0
+        self.cur_lkas_chksum = 0
 
 
         ########ROS################
@@ -148,12 +150,16 @@ class Bridge:
         self.clu_data['CF_Clu_RheostatLevel'] = data['CF_Clu_RheostatLevel']
     def set_LKAS11(self, data): # 832
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.lkas11_data['CF_Lkas_LdwsSysState'] = data['CF_Lkas_LdwsSysState']
+        self.lkas11_data['CF_Lkas_Chksum'] = data['CF_Lkas_Chksum']
+        # print(data)
+        # print(data['CF_Lkas_Chksum'])
+        # print("chksum : {}".format(self.lkas11_data['CF_Lkas_Chksum']))
 
     #Thread 1
     def bridge(self):
         cur_time = time.time()
         bsd_time = time.time()
+        lkas_time = time.time()
         while 1:
             try:
                 #Send SCC to CCAN
@@ -177,6 +183,9 @@ class Bridge:
 
                 CCAN_data =self.CCAN.recv(0)                
                 if CCAN_data != None:
+                    lkas_time = time.time()
+                    self.lkas = True
+                    # print("LKAS STATE STABLE")
                     if CCAN_data.arbitration_id == 1265:
                         self.set_CLU11(CCAN_data)
                         continue
@@ -190,12 +199,6 @@ class Bridge:
                         self.set_WHL_SPD11(CCAN_data)
                     if CCAN_data.arbitration_id == 882:
                         self.set_ELECT_GEAR(CCAN_data)
-                    if CCAN_data.arbitration_id == 832:
-                        self.set_LKAS11(CCAN_data)
-                        if self.lkas11_data['CF_Lkas_LdwsSysState'] == 0: # HAVE TO TEST PLZ CHANGE NUMBER 
-                            self.lkas.data = False
-                        else:
-                            self.lkas.data = True
 
                     if time.time() - cur_time > 0.1:
                         # self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
@@ -207,6 +210,13 @@ class Bridge:
                 
                     self.radar.data = True
                     self.SCC.send(CCAN_data)
+
+                else:
+                    if time.time() - lkas_time > 0.2:
+                        self.lkas = False
+                        self.lkas_state.publish(self.lkas)
+                        time.sleep(0.1)
+                        # print("LKAS FAULT")
 
             except KeyboardInterrupt:
                 exit(0)
