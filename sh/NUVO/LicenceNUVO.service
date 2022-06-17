@@ -1,0 +1,10 @@
+# /etc/systemd/system/LicenseNUVO.service
+[Unit]
+Description=Ros Init Daemon
+
+[Service]
+Type=simple
+ExecStart=/home/inha/aeye/sh/NUVO/LicenseNUVO.sh
+
+[Install]
+WantedBy=multi-user.target

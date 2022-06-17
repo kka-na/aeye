@@ -1,0 +1,14 @@
+[1] NUVO - roscore
+[2] NUVO - sensors, perception, bsd_pub, mode_check, error_check, estop_check, tor_check
+[3] NUC - can_bridge
+[4] CAR - ( Turn off Engine & Turn on Engine ) * 2
+[5] Open Pilot - bridge 
+[6] NUC - lane_check, vacs, can_record
+
+- * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
+
+[1], [2] -> LicenseNUVO.service 컴퓨터 부팅 시 실행
+[3] -> LicenseNUC_bridge.service 컴퓨터 부팅 뒤 20초 후 실행
+[4] -> 차 시동 껐켜 *2
+[5] -> OpenPilot bridge
+[6] -> LicenseNUC_node.sh 실행

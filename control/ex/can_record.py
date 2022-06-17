@@ -40,8 +40,10 @@ class CanReceiver:
     def ros_initialize(self):
         rospy.init_node('can_record', anonymous=True)
         rospy.Subscriber("/mode", Int8, self.mode_callback)
-        self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
-        self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
+        self.can_record = rospy.Publisher(
+            '/can_record', Int16MultiArray, queue_size=1)
+        self.can_switch = rospy.Publisher(
+            '/can_switch', Int8MultiArray, queue_size=1)
         self.mode_pub = rospy.Publisher('/mode_set', Int8, queue_size=1)
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0]
@@ -54,7 +56,6 @@ class CanReceiver:
         [drvtq, brake_pedal, accel_pedal]
         '''
         self.ros_print = True
-
 
     def receiver(self):
         while True:
@@ -95,7 +96,6 @@ class CanReceiver:
                 print(self.can_switch_data)
                 os.system('clear')
             rospy.sleep(0.1)
-
 
     def calculate_can(self):
         record = self.can_record_data.data
