@@ -36,9 +36,9 @@ class EstopChecker:
             data = int(packet.decode())
             
             if data == 0:
-                self.msg.data = 1
-            else:
                 self.msg.data = 0
+            else:
+                self.msg.data = 1
 
             self.pub.publish(self.msg)
             rate.sleep()

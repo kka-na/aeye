@@ -204,8 +204,8 @@ class Final:
 
         # ---
         # This is for Test  ( Have to Remove !!!!!! )
-        #sensorstate.data = [0,self.op_null,0,0,0,not self.radar]
-        #systemstate.data = [0,0,self.test_lane]
+        sensorstate.data = [0,0,0,0,0,0]
+        systemstate.data = [0,0,0]
         # ---- 
         
         self.sensor_check.publish(sensorstate)
