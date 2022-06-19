@@ -1,3 +1,4 @@
+from selectors import EpollSelector
 import sys
 sys.path.append('/home/aeye/.local/lib/python3.8/site-packages')
 
@@ -12,7 +13,7 @@ import signal
 import threading
 
 import rospy
-from std_msgs.msg import Int8, Bool
+from std_msgs.msg import Int8, Bool, Float32
 from std_msgs.msg import Int8MultiArray, Int16MultiArray
 
 class Activate_Signal_Interrupt_Handler:
@@ -58,7 +59,8 @@ class Bridge:
         self.scc11_data = {
             'MainMode_ACC':0,
             'VSetDis' : 0,
-            'ACC_ObjDist' : 0}
+            'ACC_ObjDist' : 0,
+            'TTC' : 10e2}
         self.obj_dist = 0
         self.last_obj_dist = 0 #from obj_dist 
         self.scc12_data  = {'ACCMode' : 0}
@@ -91,7 +93,7 @@ class Bridge:
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
-        #self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
+        self.TTC = rospy.Publisher('/ttc', Float32, queue_size=1)
         
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
@@ -126,6 +128,8 @@ class Bridge:
         self.scc11_data['MainMode_ACC'] = data['MainMode_ACC']
         self.scc11_data['VSetDis'] = data['VSetDis']
         self.scc11_data['ACC_ObjDist'] = data['ACC_ObjDist']
+        TTC = data['ACC_ObjDist']/(data['ACC_ObjRelSpd']+0.1)
+        self.scc11_data['TTC'] = abs(TTC) if data['ACC_ObjRelSpd'] < 0 else 10e2
     def set_SCC12(self, data): #1057
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.scc12_data['ACCMode']= True if data['ACCMode'] == "enabled" else False
@@ -236,7 +240,7 @@ class Bridge:
         self.can_record.publish(self.can_record_data)
         self.can_switch.publish(self.can_switch_data)
         self.radar_state.publish(self.radar)
-        #self.lkas_state.publish(self.lkas)
+        self.TTC.publish(self.scc11_data['TTC'])
         
     def calculate_can(self):
         record = self.can_record_data.data       
