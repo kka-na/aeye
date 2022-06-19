@@ -119,9 +119,9 @@ class Final:
         #     sensor_state.data.extend([True])
         # elif self.op_null == 0: # op_null false
         #     sensor_state.data.extend([False])
-        if not self.lkas: # lkas False == openpilot Fault
+        if self.lkas: # lkas False == openpilot Fault
             sensor_state.data.extend([True])
-        elif self.lkas:
+        elif not self.lkas:
             sensor_state.data.extend([False])
         
         print("LKAS : {}".format(self.lkas))
