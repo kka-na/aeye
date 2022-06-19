@@ -26,9 +26,7 @@ class Final:
         rospy.Subscriber('/pillar_marker_array', MarkerArray, self.LiDAR_result_Callback)
         rospy.Subscriber('/unstable_lane',Bool , self.lane_state_callback)
         rospy.Subscriber('/radar',Bool , self.radar_callback)
-        rospy.Subscriber('/lkas',Bool , self.lkas_callback)
-        # rospy.Subscriber('/op_null', Bool, self.op_null_callback)
-        
+        rospy.Subscriber('/lkas',Bool , self.lkas_callback)        
         rospy.Subscriber('/mode', Int8, self.mode_callback)
 
         # kana modify

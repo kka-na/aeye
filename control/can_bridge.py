@@ -93,7 +93,7 @@ class Bridge:
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
-        self.TTC = rospy.Publisher('/ttc', Float32, queue_size=1)
+        self.ttc_state = rospy.Publisher('/ttc', Bool, queue_size=1)
         
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
@@ -104,8 +104,8 @@ class Bridge:
 
         self.radar = Bool()
         self.radar.data = False
-        #self.lkas = Bool()
-        #self.lkas.data = False
+        self.ttc = Bool()
+        self.ttc.data = False
 
 
     def mode_callback(self, msg):
@@ -211,6 +211,7 @@ class Bridge:
                         # self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
                         self.can_record_data.data = self.calculate_can()
                         self.can_switch_data.data = self.switch
+                        self.ttc.data = self.calculate_ttc()
                         self.publisher()
 
                         cur_time = time.time()
@@ -240,8 +241,17 @@ class Bridge:
         self.can_record.publish(self.can_record_data)
         self.can_switch.publish(self.can_switch_data)
         self.radar_state.publish(self.radar)
-        self.TTC.publish(self.scc11_data['TTC'])
+        self.ttc_state.publish(self.ttc)
+    
+    def calculate_ttc(self):
+        ttc = self.ttc.data
+        if self.scc11_data['TTC'] <= 2.5:
+            ttc = True
+        else:
+            ttc = False
         
+        return ttc
+
     def calculate_can(self):
         record = self.can_record_data.data       
         

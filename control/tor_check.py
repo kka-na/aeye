@@ -17,6 +17,8 @@ class TOR_Record:
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
+        rospy.Subscriber('/ttc', Bool, self.ttc_callback)
+
         #AEB sub ...
 
         self.button = rospy.Publisher('/mode_set', Int8, queue_size=1)
@@ -31,7 +33,7 @@ class TOR_Record:
         self.system_array = []
         self.sensor_array = []
         self.lane_warning = 0
-
+        self.ttc = False
         self.r = rospy.Rate(10) # 10hz 
 
         self.tor_on = False
@@ -50,6 +52,8 @@ class TOR_Record:
         self.sensor_array = msg.data
     def lane_warn_callback(self, msg):
         self.lane_warning = msg.data
+    def ttc_callback(self, msg):
+        self.ttc = msg.data
 
     def publisher(self):
         self.tor_record.publish(self.tor_record_array)
@@ -96,8 +100,9 @@ class TOR_Record:
                 self.tor_record_array.data = 7
                 self.tor_on = True
             
-            # elif self.mode == 1 and AEB!!!:
-            #     self.tor_record_array.data = 8
+            elif self.mode == 1 and self.ttc:
+                self.tor_record_array.data = 8
+                self.tor_on = True
 
             self.publisher()
             self.r.sleep()
