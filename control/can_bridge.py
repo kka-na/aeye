@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from selectors import EpollSelector
 import sys
 sys.path.append('/home/aeye/.local/lib/python3.8/site-packages')
@@ -130,6 +131,7 @@ class Bridge:
         self.scc11_data['ACC_ObjDist'] = data['ACC_ObjDist']
         TTC = data['ACC_ObjDist']/(data['ACC_ObjRelSpd']+0.1)
         self.scc11_data['TTC'] = abs(TTC) if data['ACC_ObjRelSpd'] < 0 else 10e2
+        print(self.scc11_data['TTC'])
     def set_SCC12(self, data): #1057
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.scc12_data['ACCMode']= True if data['ACCMode'] == "enabled" else False
