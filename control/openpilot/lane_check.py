@@ -16,6 +16,8 @@ class LaneCheck:
             'cameraOdometry', 'carEvents', 'driverCameraState', 'driverMonitoringState'],
             addr=addr)
 
+        # self.sm = SubMaster(['modelV2', 'lateralPlan', 'carState'], addr=addr)
+
         self.temp = {'0': 0, '1': 0, '2': 0, '3': 0}
 
         rospy.init_node('laneline', anonymous=True)
@@ -25,10 +27,11 @@ class LaneCheck:
 
         self.onLane = False
         self.warnLane = 0
+
+       
     
     def get_lane_lines(self):
         self.sm.update(0)
-
         if self.sm['modelV2']:               
             if self.sm['modelV2'].laneLines:
                 for i, _ in enumerate(self.sm['modelV2'].laneLines):
@@ -38,36 +41,36 @@ class LaneCheck:
                 line2s = self.temp['2'].y
 
                 # 2. Calculate Whether a Car is on the Lane or Not
-                onLane = False
+                self.onLane = False
                 if (line2s[0]-line1s[0] > 3.5):
                     print("Lane 1 & 2's Width {} ".format(line2s[0]-line1s[0]))
-                    onLane = True
+                    self.onLane = True
                 if (line1s[0]>-0.7):
                     print("Lane 1 is Near 0")
-                    onLane = True
+                    self.onLane = True
                 if (line2s[0]<0.7):
                     print("Lane 2 is Near 0")
-                    onLane = True
+                    self.onLane = True
 
-                if(not onLane):
+                if(not self.onLane):
                     print("STABLE MY LINE")
 
                 # 3. Calculate Lane Departure
                 if self.sm['carState'].leftBlinker or self.sm['carState'].rightBlinker:
-                    warnLane = 0
+                    self.warnLane = 0
                 else:    
                     if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
-                        warnLane = 1
+                        self.warnLane = 1
                         print("Lane Warning")
                     elif (-0.75<line1s[0] or 0.75>line2s[0]):
-                        warnLane = 2
+                        self.warnLane = 2
                         print("Lane Out")
                     else:
-                        warnLane = 0
+                        self.warnLane = 0
                         print("Lane Stable")
 
-        self.lane_state_pub.publish(onLane)
-        self.lane_warn_pub.publish(warnLane)        
+        self.lane_state_pub.publish(self.onLane)
+        self.lane_warn_pub.publish(self.warnLane)        
             
 
 def signal_handler(sig, frame):
@@ -76,13 +79,14 @@ def signal_handler(sig, frame):
 
 if __name__ == "__main__":
     lc = LaneCheck()
+    rate = rospy.Rate(5)
     print("Lane Check Start !")
     while not rospy.is_shutdown():
-        try:
-            rospy.Rate(5).sleep()   
+        try:  
             signal.signal(signal.SIGINT, signal_handler)
-            os.system('clear')
-            lc.checker()
+            #os.system('clear')
+            lc.get_lane_lines()
+            rate.sleep()
         except Exception as e:
             print(e)
             print(type(e))
