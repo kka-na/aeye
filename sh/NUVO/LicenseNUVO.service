@@ -5,6 +5,7 @@ Description=Ros Init Daemon
 [Service]
 Type=simple
 ExecStart=/home/inha/aeye/sh/NUVO/LicenseNUVO.sh
+User=inha
 
 [Install]
 WantedBy=multi-user.target
