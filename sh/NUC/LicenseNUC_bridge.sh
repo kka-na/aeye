@@ -5,7 +5,7 @@ export ROS_HOSTNAME=192.168.101.6
 
 #export ZMQ=1
 
-sleep 40
+sleep 60
 
 sh /home/aeye/Documents/aeye/sh/NUC/can_bridge.sh
 #sh /home/aeye/Documents/aeye/sh/NUC/vacs.sh

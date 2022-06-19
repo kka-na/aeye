@@ -91,7 +91,7 @@ class Bridge:
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
-        self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
+        #self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
         
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
@@ -102,8 +102,8 @@ class Bridge:
 
         self.radar = Bool()
         self.radar.data = False
-        self.lkas = Bool()
-        self.lkas.data = False
+        #self.lkas = Bool()
+        #self.lkas.data = False
 
 
     def mode_callback(self, msg):
@@ -186,8 +186,8 @@ class Bridge:
 
                 CCAN_data =self.CCAN.recv(0)                
                 if CCAN_data != None:
-                    lkas_time = time.time()
-                    self.lkas = True
+                    #lkas_time = time.time()
+                    #self.lkas = True
                     # print("LKAS STATE STABLE")
                     if CCAN_data.arbitration_id == 1265:
                         self.set_CLU11(CCAN_data)
@@ -214,12 +214,12 @@ class Bridge:
                     self.radar.data = True
                     self.SCC.send(CCAN_data)
 
-                else:
-                    if time.time() - lkas_time > 0.2:
-                        self.lkas = False
-                        self.lkas_state.publish(self.lkas)
-                        time.sleep(0.1)
-                        # print("LKAS FAULT")
+                # else:
+                #     if time.time() - lkas_time > 0.2:
+                #         self.lkas = False
+                #         self.lkas_state.publish(self.lkas)
+                #         time.sleep(0.1)
+                #         # print("LKAS FAULT")
 
             except KeyboardInterrupt:
                 exit(0)
@@ -236,7 +236,7 @@ class Bridge:
         self.can_record.publish(self.can_record_data)
         self.can_switch.publish(self.can_switch_data)
         self.radar_state.publish(self.radar)
-        self.lkas_state.publish(self.lkas)
+        #self.lkas_state.publish(self.lkas)
         
     def calculate_can(self):
         record = self.can_record_data.data       

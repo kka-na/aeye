@@ -3,19 +3,15 @@ import os
 import rospy
 import signal
 import sys
+import time
 from std_msgs.msg import Bool, Int8
 
 os.environ["ZMQ"] = "1"
 
 class LaneCheck:
     def __init__(self):
-        addr = '192.168.101.100'
-        self.sm = SubMaster(['carState', 'longitudinalPlan', 'carControl', 'radarState', 'liveCalibration', 'controlsState', 'carParams',
-            'liveTracks', 'modelV2', 'liveParameters', 'lateralPlan', 'sendcan', 'gpsLocationExternal',
-            'clocks', 'thumbnail', 'roadCameraState', 'driverState', 'procLog', 'ubloxGnss', 'ubloxRaw',
-            'cameraOdometry', 'carEvents', 'driverCameraState', 'driverMonitoringState'],
-            addr=addr)
-
+        self.sm = None
+        
         # self.sm = SubMaster(['modelV2', 'lateralPlan', 'carState'], addr=addr)
 
         self.temp = {'0': 0, '1': 0, '2': 0, '3': 0}
@@ -24,53 +20,71 @@ class LaneCheck:
 
         self.lane_state_pub = rospy.Publisher('/unstable_lane', Bool, queue_size=1)
         self.lane_warn_pub = rospy.Publisher('/lane_warn', Int8, queue_size=1)
+        self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
 
         self.onLane = False
         self.warnLane = 0
-
+        self.lkas = Bool()
+        self.lkas.data = False
+        
+    def reconnect(self):
+        addr = '192.168.101.100'
+        self.sm = SubMaster(['carState', 'longitudinalPlan', 'carControl', 'radarState', 'liveCalibration', 'controlsState', 'carParams',
+            'liveTracks', 'modelV2', 'liveParameters', 'lateralPlan', 'sendcan', 'gpsLocationExternal',
+            'clocks', 'thumbnail', 'roadCameraState', 'driverState', 'procLog', 'ubloxGnss', 'ubloxRaw',
+            'cameraOdometry', 'carEvents', 'driverCameraState', 'driverMonitoringState'],
+            addr=addr)
        
     
     def get_lane_lines(self):
         self.sm.update(0)
-        if self.sm['modelV2']:               
-            if self.sm['modelV2'].laneLines:
-                for i, _ in enumerate(self.sm['modelV2'].laneLines):
-                    self.temp[str(i)] = _
+        if(time.time() - self.sm.rcv_time['modelV2'] > 1):
+            self.lkas.data = True
+            self.lkas_state.publish(self.lkas)
+            print('Fault')
+            self.reconnect()
+        else:
+            self.lkas.data = False
+            self.lkas_state.publish(self.lkas)
+            if self.sm['modelV2']:               
+                if self.sm['modelV2'].laneLines:
+                    for i, _ in enumerate(self.sm['modelV2'].laneLines):
+                        self.temp[str(i)] = _
 
-                line1s = self.temp['1'].y
-                line2s = self.temp['2'].y
+                    line1s = self.temp['1'].y
+                    line2s = self.temp['2'].y
 
-                # 2. Calculate Whether a Car is on the Lane or Not
-                self.onLane = False
-                if (line2s[0]-line1s[0] > 3.5):
-                    print("Lane 1 & 2's Width {} ".format(line2s[0]-line1s[0]))
-                    self.onLane = True
-                if (line1s[0]>-0.7):
-                    print("Lane 1 is Near 0")
-                    self.onLane = True
-                if (line2s[0]<0.7):
-                    print("Lane 2 is Near 0")
-                    self.onLane = True
+                    # 2. Calculate Whether a Car is on the Lane or Not
+                    self.onLane = False
+                    if (line2s[0]-line1s[0] > 3.5):
+                        print("Lane 1 & 2's Width {} ".format(line2s[0]-line1s[0]))
+                        self.onLane = True
+                    if (line1s[0]>-0.7):
+                        print("Lane 1 is Near 0")
+                        self.onLane = True
+                    if (line2s[0]<0.7):
+                        print("Lane 2 is Near 0")
+                        self.onLane = True
 
-                if(not self.onLane):
-                    print("STABLE MY LINE")
+                    if(not self.onLane):
+                        print("STABLE MY LINE")
 
-                # 3. Calculate Lane Departure
-                if self.sm['carState'].leftBlinker or self.sm['carState'].rightBlinker:
-                    self.warnLane = 0
-                else:    
-                    if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
-                        self.warnLane = 1
-                        print("Lane Warning")
-                    elif (-0.75<line1s[0] or 0.75>line2s[0]):
-                        self.warnLane = 2
-                        print("Lane Out")
-                    else:
+                    # 3. Calculate Lane Departure
+                    if self.sm['carState'].leftBlinker or self.sm['carState'].rightBlinker:
                         self.warnLane = 0
-                        print("Lane Stable")
+                    else:    
+                        if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
+                            self.warnLane = 1
+                            print("Lane Warning")
+                        elif (-0.75<line1s[0] or 0.75>line2s[0]):
+                            self.warnLane = 2
+                            print("Lane Out")
+                        else:
+                            self.warnLane = 0
+                            print("Lane Stable")
 
-        self.lane_state_pub.publish(self.onLane)
-        self.lane_warn_pub.publish(self.warnLane)        
+            self.lane_state_pub.publish(self.onLane)
+            self.lane_warn_pub.publish(self.warnLane)               
             
 
 def signal_handler(sig, frame):
@@ -79,6 +93,7 @@ def signal_handler(sig, frame):
 
 if __name__ == "__main__":
     lc = LaneCheck()
+    lc.reconnect()
     rate = rospy.Rate(5)
     print("Lane Check Start !")
     while not rospy.is_shutdown():
