@@ -33,7 +33,7 @@ class TOR_Record:
         self.system_array = []
         self.sensor_array = []
         self.lane_warning = 0
-        self.ttc = False
+        self.aeb = False
         self.r = rospy.Rate(10) # 10hz 
 
         self.tor_on = False
