@@ -64,19 +64,21 @@ class Bridge:
             'TTC' : 10e2}
         self.obj_dist = 0
         self.last_obj_dist = 0 #from obj_dist 
-        self.scc12_data  = {'ACCMode' : 0}
+        self.scc12_data  = {'ACCMode' : 0, 'CF_VSM_Warn':0}
         self.sas11_data = {'SAS_Angle' :  0} #from SAS11
         self.mdps11_data = {'CR_Mdps_DrvTq': 0}
         self.clu_data = {'CF_Clu_Vanz' : 0, 
                         'CF_Clu_RheostatLevel' : 0, 
                         'CF_Clu_VanzDecimal' : 0}
         self.lkas11_data = {'CF_Lkas_MsgCount' : 0}
-        
+        self.fca11_data={'CF_VSM_Warn':0}
         self.switch_cnt = 0
         self.switch_on = False
 
         self.prev_lkas_chksum = 0
         self.cur_lkas_chksum = 0
+
+        self.keep_alive = time.time()
 
 
         ########ROS################
@@ -95,6 +97,7 @@ class Bridge:
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
         self.ttc_state = rospy.Publisher('/ttc', Bool, queue_size=1)
+        self.ttc_test = rospy.Publisher('/ttc_test', Float32, queue_size=1)
         
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
@@ -130,14 +133,22 @@ class Bridge:
         self.scc11_data['VSetDis'] = data['VSetDis']
         self.scc11_data['ACC_ObjDist'] = data['ACC_ObjDist']
         TTC = data['ACC_ObjDist']/(data['ACC_ObjRelSpd']+0.1)
-        self.scc11_data['TTC'] = abs(TTC) if data['ACC_ObjRelSpd'] < 0 else 10e2
-        print(self.scc11_data['TTC'])
+        TTC = min(abs(TTC),100)
+        self.scc11_data['TTC'] = abs(TTC) if data['ACC_ObjRelSpd'] < 0 else 10e1
+        #print(self.scc11_data['TTC'])
+        self.ttc_test.publish(TTC)
+
     def set_SCC12(self, data): #1057
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.scc12_data['ACCMode']= True if data['ACCMode'] == "enabled" else False
+        self.scc12_data['CF_VSM_Warn'] = data['CF_VSM_Warn']
     def set_SAS11(self, data): #688
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.sas11_data['SAS_Angle']  = data['SAS_Angle']
+    def set_FCA11(self, data):
+        data = self.db.decode_message(data.arbitration_id, data.data)
+        self.sas11_data['CF_VSM_Warn']  = data['CF_VSM_Warn']
+
     def set_MDPS11(self, data): # 897
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.mdps11_data['CR_Mdps_DrvTq']= data['CR_Mdps_DrvTq']
@@ -181,6 +192,8 @@ class Bridge:
                         self.set_SCC12(SCC_data)
                     if SCC_id == 688:
                         self.set_SAS11(SCC_data)
+                    if SCC_id == 909:
+                        self.set_FCA11(SCC_data)
                     self.CCAN.send(SCC_data)
                 else:     #Publish Custom BSD Data
                     if time.time() - bsd_time > 0.1:
@@ -247,7 +260,10 @@ class Bridge:
     
     def calculate_ttc(self):
         ttc = self.ttc.data
-        if self.scc11_data['TTC'] <= 2.5:
+        if self.scc11_data['TTC'] <= 2.5 or self.fca11_data['CF_VSM_Warn'] == 2 or self.scc12_data['CF_VSM_Warn']:
+            self.keep_alive = time.time()
+            ttc = True
+        elif time.time() - self.keep_alive < 3:
             ttc = True
         else:
             ttc = False
