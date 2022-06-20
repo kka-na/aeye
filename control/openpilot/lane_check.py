@@ -87,11 +87,15 @@ class LaneCheck:
             self.lane_warn_pub.publish(self.warnLane)                   
 
     def get_fcw_events(self):
+        FCW1 = False
+        FCW2 = False
         FCW = False
         if self.sm['longitudinalPlan'] :
-            FCW = self.sm['longitudinalPlan'].fcw
-        elif self.sm['modelV2']:
-            FCW = self.sm['modelV2'].meta.hardBrakePredicted      
+            FCW1 = self.sm['longitudinalPlan'].fcw
+        if self.sm['modelV2']:
+            FCW2 = self.sm['modelV2'].meta.hardBrakePredicted      
+        if FCW1 or FCW2 :
+            FCW = True
         self.op_fcw.publish(FCW)
         
 def signal_handler(sig, frame):
@@ -101,7 +105,7 @@ def signal_handler(sig, frame):
 if __name__ == "__main__":
     lc = LaneCheck()
     lc.reconnect()
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(5)
     print("Lane Check Start !")
     while not rospy.is_shutdown():
         try:  
