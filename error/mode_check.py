@@ -48,7 +48,8 @@ class ModeChanger:
     def modePublisher(self):
         mode_msg = Int8()
 
-        if self.prev_mode == 1 and self.tor != 0: 
+        # TOR8 = AEB : Do Not Need to Change Mode
+        if self.prev_mode == 1 and self.tor != 0 and self.tor != 8: 
             mode_msg.data = 0 
             self.mode_set = 0
             self.tor_print(self.tor)

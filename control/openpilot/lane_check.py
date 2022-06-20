@@ -21,6 +21,7 @@ class LaneCheck:
         self.lane_state_pub = rospy.Publisher('/unstable_lane', Bool, queue_size=1)
         self.lane_warn_pub = rospy.Publisher('/lane_warn', Int8, queue_size=1)
         self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
+        self.op_fcw = rospy.Publisher('/op_fcw', Bool, queue_size = 1)
 
         self.onLane = False
         self.warnLane = 0
@@ -34,8 +35,7 @@ class LaneCheck:
             'clocks', 'thumbnail', 'roadCameraState', 'driverState', 'procLog', 'ubloxGnss', 'ubloxRaw',
             'cameraOdometry', 'carEvents', 'driverCameraState', 'driverMonitoringState'],
             addr=addr)
-       
-    
+
     def get_lane_lines(self):
         self.sm.update(0)
         if(time.time() - self.sm.rcv_time['modelV2'] > 1):
@@ -84,9 +84,16 @@ class LaneCheck:
                             print("Lane Stable")
 
             self.lane_state_pub.publish(self.onLane)
-            self.lane_warn_pub.publish(self.warnLane)               
-            
+            self.lane_warn_pub.publish(self.warnLane)                   
 
+    def get_fcw_events(self):
+        FCW = False
+        if self.sm['longitudinalPlan'] :
+            FCW = self.sm['longitudinalPlan'].fcw
+        elif self.sm['modelV2']:
+            FCW = self.sm['modelV2'].meta.hardBrakePredicted      
+        self.op_fcw.publish(FCW)
+        
 def signal_handler(sig, frame):
     print('\nPressed CTRL + C !')
     sys.exit(0)
@@ -94,13 +101,13 @@ def signal_handler(sig, frame):
 if __name__ == "__main__":
     lc = LaneCheck()
     lc.reconnect()
-    rate = rospy.Rate(5)
+    rate = rospy.Rate(10)
     print("Lane Check Start !")
     while not rospy.is_shutdown():
         try:  
             signal.signal(signal.SIGINT, signal_handler)
-            #os.system('clear')
             lc.get_lane_lines()
+            lc.get_fcw_events()
             rate.sleep()
         except Exception as e:
             print(e)

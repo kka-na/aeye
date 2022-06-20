@@ -17,7 +17,7 @@ class TOR_Record:
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
-        rospy.Subscriber('/ttc', Bool, self.ttc_callback)
+        rospy.Subscriber('/aeb', Bool, self.aeb_callback)
 
         #AEB sub ...
 
@@ -52,8 +52,9 @@ class TOR_Record:
         self.sensor_array = msg.data
     def lane_warn_callback(self, msg):
         self.lane_warning = msg.data
-    def ttc_callback(self, msg):
-        self.ttc = msg.data
+    def aeb_callback(self, msg):
+        self.aeb = msg.data
+   
 
     def publisher(self):
         self.tor_record.publish(self.tor_record_array)
@@ -100,7 +101,7 @@ class TOR_Record:
                 self.tor_record_array.data = 7
                 self.tor_on = True
             
-            elif self.mode == 1 and self.ttc:
+            elif self.mode == 1 and self.aeb:
                 self.tor_record_array.data = 8
                 self.tor_on = True
 

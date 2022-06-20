@@ -91,12 +91,13 @@ class Bridge:
         rospy.Subscriber('/sensor_state', Int8MultiArray, self.sensor_state_callback)
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
+        rospy.Subscriber('/op_fcw', Bool, self.op_fcw_callback)
         #AEB sub ...
 
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
-        self.ttc_state = rospy.Publisher('/ttc', Bool, queue_size=1)
+        self.aeb_state = rospy.Publisher('/aeb', Bool, queue_size=1)
         self.ttc_test = rospy.Publisher('/ttc_test', Float32, queue_size=1)
         
         self.can_record_data = Int16MultiArray()
@@ -108,8 +109,9 @@ class Bridge:
 
         self.radar = Bool()
         self.radar.data = False
-        self.ttc = Bool()
-        self.ttc.data = False
+        self.aeb = Bool()
+        self.aeb.data = False
+        self.op_fcw = False
 
 
     def mode_callback(self, msg):
@@ -126,6 +128,8 @@ class Bridge:
         self.sensor_array = msg.data
     def lane_warn_callback(self, msg):
         self.lane_warning = msg.data
+    def op_fcw_callback(self, msg):
+        self.op_fcw = msg.data
 
     def set_SCC11(self, data): #1056
         data = self.db.decode_message(data.arbitration_id, data.data)
@@ -226,7 +230,7 @@ class Bridge:
                         # self.can_record_data.data, self.can_switch_data.data = self.calculate_can()
                         self.can_record_data.data = self.calculate_can()
                         self.can_switch_data.data = self.switch
-                        self.ttc.data = self.calculate_ttc()
+                        self.aeb.data = self.calculate_aeb()
                         self.publisher()
 
                         cur_time = time.time()
@@ -256,19 +260,18 @@ class Bridge:
         self.can_record.publish(self.can_record_data)
         self.can_switch.publish(self.can_switch_data)
         self.radar_state.publish(self.radar)
-        self.ttc_state.publish(self.ttc)
+        self.aeb_state.publish(self.aeb)
     
-    def calculate_ttc(self):
-        ttc = self.ttc.data
-        if self.scc11_data['TTC'] <= 2.5 or self.fca11_data['CF_VSM_Warn'] == 2 or self.scc12_data['CF_VSM_Warn']:
+    def calculate_aeb(self):
+        aeb = self.aeb.data
+        if self.scc11_data['TTC'] <= 2.5 or self.op_fcw:
             self.keep_alive = time.time()
-            ttc = True
+            aeb = True
         elif time.time() - self.keep_alive < 3:
-            ttc = True
+            aeb = True
         else:
-            ttc = False
-        
-        return ttc
+            aeb = False 
+        return aeb
 
     def calculate_can(self):
         record = self.can_record_data.data       
