@@ -264,7 +264,7 @@ class Bridge:
     
     def calculate_aeb(self):
         aeb = self.aeb.data
-        if self.scc11_data['TTC'] <= 2.5 or self.op_fcw:
+        if self.rcv_wheel_speed > 10 and ( self.scc11_data['TTC'] <= 2.5 or self.op_fcw ):
             self.keep_alive = time.time()
             aeb = True
         elif time.time() - self.keep_alive < 3:
