@@ -23,11 +23,25 @@ class LaneCheck:
         self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
         self.op_fcw = rospy.Publisher('/op_fcw', Bool, queue_size = 1)
 
+        rospy.Subscriber('/can_record', Int16MultiArray, self.can_record_callback)
+       
+
+        ##
+        self.l_curvature = rospy.Publisher('/l_curvature', Int16, queue_size=1)
+        self.r_curvature = rospy.Publisher('/r_curvature', Int16, queue_size=1)
+        self.left_curvated = 0
+        self.right_curvated = 0
+        ##
+
         self.onLane = False
         self.warnLane = 0
         self.lkas = Bool()
         self.lkas.data = False
-        
+        self.vel = 0
+    
+    def can_record_callback(self, msg):
+        self.vel = msg.data[5]
+
     def reconnect(self):
         addr = '192.168.101.100'
         self.sm = SubMaster(['carState', 'longitudinalPlan', 'carControl', 'radarState', 'liveCalibration', 'controlsState', 'carParams',
@@ -56,7 +70,7 @@ class LaneCheck:
 
                     # 2. Calculate Whether a Car is on the Lane or Not
                     self.onLane = False
-                    if (line2s[0]-line1s[0] > 3.5):
+                    if (line2s[0]-line1s[0] > 3.7):
                         print("Lane 1 & 2's Width {} ".format(line2s[0]-line1s[0]))
                         self.onLane = True
                     if (line1s[0]>-0.7):
@@ -65,6 +79,9 @@ class LaneCheck:
                     if (line2s[0]<0.7):
                         print("Lane 2 is Near 0")
                         self.onLane = True
+                    if ((self.left_curvated < 350 or self.right_curvated < 350) 51111111111`and  self.vel < 25)
+                        self.onLane = True
+                        print("Large Curvature & Low Velocity")
 
                     if(not self.onLane):
                         print("STABLE MY LINE")
@@ -82,6 +99,25 @@ class LaneCheck:
                         else:
                             self.warnLane = 0
                             print("Lane Stable")
+                    
+                     # 4. Calculate Curvature 
+                    xx = np.array(x)[5:15] # for calculate forward lane (5~15)
+                    lefty = np.array(line1s)[5:15]
+                    righty = np.array(line2s)[5:15]
+                    left_fit_cr = np.polyfit(xx, lefty, 2) # return poltnomial coefficient
+                    right_fit_cr = np.polyfit(xx, righty, 2)
+                    self.left_curvated = ((1+(2*left_fit_cr[0]+left_fit_cr[1])**2)**1.5)/np.absolute(2*left_fit_cr[0]) # calculate curvature
+                    self.right_curvated = ((1+(2*right_fit_cr[0]+right_fit_cr[1])**2)**1.5)/np.absolute(2*right_fit_cr[0])
+
+                    if(int(self.left_curvated) < 300):
+                        print("Can't Change Lanes Left Cur : {} ".format(int(self.left_curvated)))
+                    if(int(self.right_curvated) < 300):
+                        print("Can't Change Lanes Right Cur : {} ".format(int(self.right_curvated)))
+
+            ###
+            self.l_curvature.publish(self.left_curvated)
+            self.r_curvature.publish(self.right_curvated)
+            ###
 
             self.lane_state_pub.publish(self.onLane)
             self.lane_warn_pub.publish(self.warnLane)                   

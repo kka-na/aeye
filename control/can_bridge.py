@@ -348,8 +348,8 @@ class Bridge:
             time.sleep(0.02)
     
     def set_sw_state(self, current, target):
-        if(self.sas11_data['SAS_Angle'] > 10):
-            target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/10)) # for kiapi 40
+        if(self.sas11_data['SAS_Angle'] > 5):
+            target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/5)) # for kiapi 40
         if current < target:
             return 1
         elif current > target:
