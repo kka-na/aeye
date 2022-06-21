@@ -25,12 +25,12 @@ class BSD:
             car_y = box.pose.position.y
             car_x_array.append(car_x)
             car_y_array.append(car_y)
-            if any(-16 < x for x in car_x_array) & any(16 > x for x in car_x_array) & any(2 < y for y in car_y_array) & any(5 > y for y in car_y_array):
+            if any(-20 < x for x in car_x_array) & any(20 > x for x in car_x_array) & any(2 < y for y in car_y_array) & any(5 > y for y in car_y_array):
                 bsd_msg.data[0] = 1
             else:
                 bsd_msg.data[0] = 0
 
-            if any(-16 < x for x in car_x_array) & any(16 > x for x in car_x_array) & any(-5 < y for y in car_y_array) & any(-2 > y for y in car_y_array):
+            if any(-20 < x for x in car_x_array) & any(20 > x for x in car_x_array) & any(-5 < y for y in car_y_array) & any(-2 > y for y in car_y_array):
                 bsd_msg.data[1] = 1
             else:
                 bsd_msg.data[1] = 0

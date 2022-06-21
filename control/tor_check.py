@@ -61,14 +61,14 @@ class TOR_Record:
 
     def record(self):
         while not rospy.is_shutdown():
+
             if self.tor_on:
-                if self.tor_cnt >= 30:
+                if self.tor_cnt >= 30 and self.can_switch_array[2] == 1  :
                     self.tor_record_array.data = 0
                     self.tor_cnt = 0
-                    self.tor_on = False
+                    self.tor_on = False 
                 else:
                     self.tor_cnt += 1
-
 
             if self.mode == 1 and self.can_switch_array[0] == 1:
                 # self.button.publish(0)
@@ -104,6 +104,7 @@ class TOR_Record:
             elif self.mode == 1 and self.aeb:
                 self.tor_record_array.data = 8
                 self.tor_on = True
+
 
             self.publisher()
             self.r.sleep()
