@@ -51,12 +51,13 @@ class ModeChanger:
 
         # TOR8 = AEB : Do Not Need to Change Mode
         if self.prev_mode == 1 and self.tor != 0 and self.tor != 8: 
-            if self.tor_cnt >= 20:
-                mode_msg.data = 0 
+            if self.tor_cnt >= 10:
+                mode_msg.data = 0
                 self.mode_set = 0
                 self.tor_print(self.tor)
                 self.tor_cnt = 0
             else:
+                mode_msg.data = 1
                 self.tor_cnt += 1
 
         elif self.mode_set == 1:
@@ -69,6 +70,8 @@ class ModeChanger:
         else:
             print("Else Case")
         self.prev_mode = int(mode_msg.data)
+
+
         self.mode_pub.publish(mode_msg)
 
 
