@@ -92,6 +92,8 @@ class Bridge:
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
         rospy.Subscriber('/op_fcw', Bool, self.op_fcw_callback)
+        rospy.Subscriber('/l_curvature', Int16, self.l_curvature_callback)
+        rospy.Subscriber('/r_curvature', Int16, self.r_curvature_callback)
         #AEB sub ...
 
         self.steer_torque = rospy.Publisher('/toq', Bool, queue_size=1)
@@ -100,6 +102,7 @@ class Bridge:
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
         self.aeb_state = rospy.Publisher('/aeb', Bool, queue_size=1)
         self.ttc_test = rospy.Publisher('/ttc_test', Float32, queue_size=1)
+        self.clu_cruise = rospy.Publisher('/clu_cruise', Int8,queue_size=1)
         
         self.can_record_data = Int16MultiArray()
         self.can_record_data.data = [0, 0, 0, 0, 0, 0]
@@ -113,6 +116,9 @@ class Bridge:
         self.aeb = Bool()
         self.aeb.data = False
         self.op_fcw = False
+
+        self.l_curvature = 0
+        self.r_curvature = 0
 
 
     def mode_callback(self, msg):
@@ -131,6 +137,11 @@ class Bridge:
         self.lane_warning = msg.data
     def op_fcw_callback(self, msg):
         self.op_fcw = msg.data
+    def l_curvature_callback(self, msg):
+        self.l_curvature = msg.data
+    def r_curvature_callback(self, msg):
+        self.r_curvature = msg.data
+
 
     def set_SCC11(self, data): #1056
         data = self.db.decode_message(data.arbitration_id, data.data)
@@ -173,6 +184,8 @@ class Bridge:
         self.clu_data['CF_Clu_Vanz'] = data['CF_Clu_Vanz']
         self.clu_data['CF_Clu_VanzDecimal'] = data['CF_Clu_VanzDecimal']
         self.clu_data['CF_Clu_RheostatLevel'] = data['CF_Clu_RheostatLevel']
+        clu_cruise = data['CF_Clu_CruiseSwMain']
+        self.clu_cruise.publish(clu_cruise)
     def set_LKAS11(self, data): # 832
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.lkas11_data['CF_Lkas_Chksum'] = data['CF_Lkas_Chksum']
@@ -350,8 +363,18 @@ class Bridge:
             time.sleep(0.02)
     
     def set_sw_state(self, current, target):
-        if(int(abs(self.sas11_data['SAS_Angle'])) > 5):
-            target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/5)) # for kiapi 40
+        # if(int(abs(self.sas11_data['SAS_Angle'])) > 5):
+        #     target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/5)) # for kiapi 40
+        
+        #For License    
+        if self.l_curvature < 300:
+            target = min(target, target-int(abs(300-self.l_curvature)*0.05))
+        else if self.r_curvature < 300:
+            target = min(target, target-int(abs(300-self.r_curvature )*0.05))
+        
+        #For KIAPI
+        #if self.l_curvature < 300 or self.r_curvature < 300:
+            #target = 40
         if current < target:
             return 1
         elif current > target:

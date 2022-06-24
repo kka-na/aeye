@@ -73,23 +73,24 @@ class LaneCheck:
 
                     # 2. Calculate Whether a Car is on the Lane or Not
                     self.onLane = False
-                    lane_width= line2s[0]-line1s[0] 
-                    if (lane_width > 3.7):
-                        #print("Lane 1 & 2's Width {} ".format(lane_width))
-                        self.onLane = True
+
+                    #Delete On Lane Checker with Lane Width 
+
+                    # lane_width= line2s[0]-line1s[0] 
+                    # if (lane_width > 3.7):
+                    #     #print("Lane 1 & 2's Width {} ".format(lane_width))
+                    #     self.onLane = True
+
+
                     if (line1s[0]>-0.7):
                         #print("Lane 1 is Near 0")
                         self.onLane = True
                     if (line2s[0]<0.7):
                         #print("Lane 2 is Near 0")
                         self.onLane = True
-                    if ((self.left_curvated < 400 or self.right_curvated < 400) and  self.vel < 25):
+                    if ((self.left_curvated < 90 or self.right_curvated < 90) and self.vel < 25):
                         self.onLane = True
                         #print("Large Curvature & Low Velocity")
-
-                    print(self.edge-line1s[1])
-                    #if(not self.onLane):
-                        #print("STABLE MY LINE")
 
                     # 3. Calculate Lane Departure
                     if self.sm['carState'].leftBlinker or self.sm['carState'].rightBlinker:
@@ -98,7 +99,7 @@ class LaneCheck:
                         if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
                             self.warnLane = 1
                             #print("Lane Warning")
-                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.left_curvated < 90 or self.right_curvated < 90):
+                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.left_curvated < 90 or self.right_curvated < Z90):
                             self.warnLane = 2
                             #print("Lane Out")
                         else:

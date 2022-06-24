@@ -130,7 +130,7 @@ class LateralPlanner():
       cnt = 0
       for i in range(len(sm['modelV2'].roadEdges[0].x)):
             left_near += abs(sm['modelV2'].laneLines[1].y[i]-sm['modelV2'].roadEdges[0].y[i])
-            right_near += abs(sm['modelV2'].laneLines[2].y[i]-sm['modelV2'].roadEdges[1].y[i])
+            right_near += a``bs(sm['modelV2'].laneLines[2].y[i]-sm['modelV2'].roadEdges[1].y[i])``
             i += 2
             cnt += 1
 
