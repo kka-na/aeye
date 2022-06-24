@@ -11,6 +11,7 @@ class ModeChanger:
         self.prev_mode = 0
         self.mode_set = 0
         self.tor = 0
+        self.tor_cnt = 0
 
         rospy.Subscriber('/mode_set', Int8, self.mode_set_callback)
         rospy.Subscriber('/tor', Int8, self.tor_callback)
@@ -50,9 +51,13 @@ class ModeChanger:
 
         # TOR8 = AEB : Do Not Need to Change Mode
         if self.prev_mode == 1 and self.tor != 0 and self.tor != 8: 
-            mode_msg.data = 0 
-            self.mode_set = 0
-            self.tor_print(self.tor)
+            if self.tor_cnt >= 20:
+                mode_msg.data = 0 
+                self.mode_set = 0
+                self.tor_print(self.tor)
+                self.tor_cnt = 0
+            else:
+                self.tor_cnt += 1
 
         elif self.mode_set == 1:
             mode_msg.data = 1
