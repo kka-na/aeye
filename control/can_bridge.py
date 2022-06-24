@@ -14,7 +14,7 @@ import signal
 import threading
 
 import rospy
-from std_msgs.msg import Int8, Bool, Float32
+from std_msgs.msg import Int8, Bool, Float32, Int16
 from std_msgs.msg import Int8MultiArray, Int16MultiArray
 
 class Activate_Signal_Interrupt_Handler:
@@ -366,7 +366,7 @@ class Bridge:
         #For License    
         if self.l_curvature < 300:
             target = min(target, target-int(abs(300-self.l_curvature)*0.05))
-        else if self.r_curvature < 300:
+        elif self.r_curvature < 300:
             target = min(target, target-int(abs(300-self.r_curvature )*0.05))
         
         #For KIAPI

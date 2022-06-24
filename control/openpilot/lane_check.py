@@ -5,7 +5,7 @@ import rospy
 import signal
 import sys
 import time
-from std_msgs.msg import Bool, Int8, Int16MultiArray, Int16
+from std_msgs.msg import Bool, Int8, Int16MultiArray, Int16, Float32MultiArray
 
 os.environ["ZMQ"] = "1"
 
@@ -23,6 +23,7 @@ class LaneCheck:
         self.lane_warn_pub = rospy.Publisher('/lane_warn', Int8, queue_size=1)
         self.lkas_state = rospy.Publisher('/lkas', Bool, queue_size=1)
         self.op_fcw = rospy.Publisher('/op_fcw', Bool, queue_size = 1)
+        self.ll_prob = rospy.Publisher('ll_prob', Float32MultiArray, queue_size = 1)
 
         rospy.Subscriber('/can_record', Int16MultiArray, self.can_record_callback)
        
@@ -100,7 +101,7 @@ class LaneCheck:
                         if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
                             self.warnLane = 1
                             #print("Lane Warning")
-                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.left_curvated < 90 or self.right_curvated < Z90):
+                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.left_curvated < 80 or self.right_curvated < 80):
                             self.warnLane = 2
                             #print("Lane Out")
                         else:
@@ -148,6 +149,7 @@ class LaneCheck:
                 self.lane_prob = True
             else:
                 self.lane_prob = False
+            print(self.sm['modelV2'].laneLineProbs[1],self.sm['modelV2'].laneLineProbs[2])
     
     def get_edge(self):
         if self.sm['modelV2'].roadEdges:
@@ -156,7 +158,7 @@ class LaneCheck:
             line2s = self.temp['1'].y
             self.edge = line2s[1]
 
-        
+# self.ll_prob.data = self.sm['modelV2'].laneLineProbs[1], self.sm['modelV2'].laneLineProbs[2]]
 def signal_handler(sig, frame):
     #print('\nPressed CTRL + C !')
     sys.exit(0)
