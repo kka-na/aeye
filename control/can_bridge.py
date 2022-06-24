@@ -96,7 +96,6 @@ class Bridge:
         rospy.Subscriber('/r_curvature', Int16, self.r_curvature_callback)
         #AEB sub ...
 
-        self.steer_torque = rospy.Publisher('/toq', Bool, queue_size=1)
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
@@ -312,11 +311,9 @@ class Bridge:
         elif self.e_ems11_data['Accel_Pedal_Pos'] > 10 and self.mode == 1:
             self.switch[1] = 1
             self.switch_on = True
-        elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 160 and self.mode == 1:
+        elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 220 and self.mode == 1: #160->220
             self.switch[2] = 1
             self.switch_on = True
-        elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 160 and self.mode == 0:
-            self.steer_torque.publish(True)
         return record #, self.switch
 
     def set_custom_bsd(self):
