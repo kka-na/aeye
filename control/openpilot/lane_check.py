@@ -145,7 +145,7 @@ class LaneCheck:
     def get_lane_prob(self):
         if self.sm['modelV2'].laneLineProbs:
             prob = (self.sm['modelV2'].laneLineProbs[1]+self.sm['modelV2'].laneLineProbs[2])/2
-            if prob < 0.2: # When there are no lanes 
+            if prob < 0.15: # When there are no lanes 
                 self.lane_prob = True
             else:
                 self.lane_prob = False
