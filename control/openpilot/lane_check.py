@@ -81,7 +81,8 @@ class LaneCheck:
                     #     #print("Lane 1 & 2's Width {} ".format(lane_width))
                     #     self.onLane = True
 
-
+                    if self.lane_prob:
+                        self.onLane = True
                     if (line1s[0]>-0.7):
                         #print("Lane 1 is Near 0")
                         self.onLane = True
