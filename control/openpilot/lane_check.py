@@ -1,10 +1,11 @@
 from cereal.messaging import SubMaster
+import numpy as np
 import os
 import rospy
 import signal
 import sys
 import time
-from std_msgs.msg import Bool, Int8
+from std_msgs.msg import Bool, Int8, Int16MultiArray, Int16
 
 os.environ["ZMQ"] = "1"
 
@@ -38,6 +39,8 @@ class LaneCheck:
         self.lkas = Bool()
         self.lkas.data = False
         self.vel = 0
+        self.lane_prob = False
+        self.edge = 0
     
     def can_record_callback(self, msg):
         self.vel = msg.data[5]
@@ -55,7 +58,7 @@ class LaneCheck:
         if(time.time() - self.sm.rcv_time['modelV2'] > 1):
             self.lkas.data = True
             self.lkas_state.publish(self.lkas)
-            print('Fault')
+            #print('Fault')
             self.reconnect()
         else:
             self.lkas.data = False
@@ -64,27 +67,29 @@ class LaneCheck:
                 if self.sm['modelV2'].laneLines:
                     for i, _ in enumerate(self.sm['modelV2'].laneLines):
                         self.temp[str(i)] = _
-
+                    x = self.temp['1'].x
                     line1s = self.temp['1'].y
                     line2s = self.temp['2'].y
 
                     # 2. Calculate Whether a Car is on the Lane or Not
                     self.onLane = False
-                    if (line2s[0]-line1s[0] > 3.7):
-                        print("Lane 1 & 2's Width {} ".format(line2s[0]-line1s[0]))
+                    lane_width= line2s[0]-line1s[0] 
+                    if (lane_width > 3.7):
+                        #print("Lane 1 & 2's Width {} ".format(lane_width))
                         self.onLane = True
                     if (line1s[0]>-0.7):
-                        print("Lane 1 is Near 0")
+                        #print("Lane 1 is Near 0")
                         self.onLane = True
                     if (line2s[0]<0.7):
-                        print("Lane 2 is Near 0")
+                        #print("Lane 2 is Near 0")
                         self.onLane = True
-                    if ((self.left_curvated < 350 or self.right_curvated < 350) 51111111111`and  self.vel < 25)
+                    if ((self.left_curvated < 400 or self.right_curvated < 400) and  self.vel < 25):
                         self.onLane = True
-                        print("Large Curvature & Low Velocity")
+                        #print("Large Curvature & Low Velocity")
 
-                    if(not self.onLane):
-                        print("STABLE MY LINE")
+                    print(self.edge-line1s[1])
+                    #if(not self.onLane):
+                        #print("STABLE MY LINE")
 
                     # 3. Calculate Lane Departure
                     if self.sm['carState'].leftBlinker or self.sm['carState'].rightBlinker:
@@ -92,13 +97,13 @@ class LaneCheck:
                     else:    
                         if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
                             self.warnLane = 1
-                            print("Lane Warning")
-                        elif (-0.75<line1s[0] or 0.75>line2s[0]):
+                            #print("Lane Warning")
+                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.left_curvated < 90 or self.right_curvated < 90):
                             self.warnLane = 2
-                            print("Lane Out")
+                            #print("Lane Out")
                         else:
                             self.warnLane = 0
-                            print("Lane Stable")
+                            #print("Lane Stable")
                     
                      # 4. Calculate Curvature 
                     xx = np.array(x)[5:15] # for calculate forward lane (5~15)
@@ -106,13 +111,13 @@ class LaneCheck:
                     righty = np.array(line2s)[5:15]
                     left_fit_cr = np.polyfit(xx, lefty, 2) # return poltnomial coefficient
                     right_fit_cr = np.polyfit(xx, righty, 2)
-                    self.left_curvated = ((1+(2*left_fit_cr[0]+left_fit_cr[1])**2)**1.5)/np.absolute(2*left_fit_cr[0]) # calculate curvature
-                    self.right_curvated = ((1+(2*right_fit_cr[0]+right_fit_cr[1])**2)**1.5)/np.absolute(2*right_fit_cr[0])
+                    self.left_curvated = min(int(((1+(2*left_fit_cr[0]+left_fit_cr[1])**2)**1.5)/np.absolute(2*left_fit_cr[0])), 30000) # calculate curvature
+                    self.right_curvated = min(int(((1+(2*right_fit_cr[0]+right_fit_cr[1])**2)**1.5)/np.absolute(2*right_fit_cr[0])), 30000)
 
-                    if(int(self.left_curvated) < 300):
-                        print("Can't Change Lanes Left Cur : {} ".format(int(self.left_curvated)))
-                    if(int(self.right_curvated) < 300):
-                        print("Can't Change Lanes Right Cur : {} ".format(int(self.right_curvated)))
+                    #if(int(self.left_curvated) < 300):
+                        #print("Can't Change Lanes Left Cur : {} ".format(int(self.left_curvated)))
+                    #if(int(self.right_curvated) < 300):
+                        #print("Can't Change Lanes Right Cur : {} ".format(int(self.right_curvated)))
 
             ###
             self.l_curvature.publish(self.left_curvated)
@@ -133,23 +138,41 @@ class LaneCheck:
         if FCW1 or FCW2 :
             FCW = True
         self.op_fcw.publish(FCW)
+    
+    def get_lane_prob(self):
+        if self.sm['modelV2'].laneLineProbs:
+            prob = (self.sm['modelV2'].laneLineProbs[1]+self.sm['modelV2'].laneLineProbs[2])/2
+            if prob < 0.2: # When there are no lanes 
+                self.lane_prob = True
+            else:
+                self.lane_prob = False
+    
+    def get_edge(self):
+        if self.sm['modelV2'].roadEdges:
+            for i, _ in enumerate(self.sm['modelV2'].roadEdges):
+                self.temp[str(i)] = _
+            line2s = self.temp['1'].y
+            self.edge = line2s[1]
+
         
 def signal_handler(sig, frame):
-    print('\nPressed CTRL + C !')
+    #print('\nPressed CTRL + C !')
     sys.exit(0)
 
 if __name__ == "__main__":
     lc = LaneCheck()
     lc.reconnect()
     rate = rospy.Rate(5)
-    print("Lane Check Start !")
+    #print("Lane Check Start !")
     while not rospy.is_shutdown():
         try:  
             signal.signal(signal.SIGINT, signal_handler)
             lc.get_lane_lines()
             lc.get_fcw_events()
+            lc.get_lane_prob()
+            lc.get_edge()
             rate.sleep()
         except Exception as e:
-            print(e)
-            print(type(e))
+            #print(e)
+            #print(type(e))
             exit()

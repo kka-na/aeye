@@ -94,6 +94,7 @@ class Bridge:
         rospy.Subscriber('/op_fcw', Bool, self.op_fcw_callback)
         #AEB sub ...
 
+        self.steer_torque = rospy.Publisher('/toq', Bool, queue_size=1)
         self.can_record = rospy.Publisher('/can_record', Int16MultiArray, queue_size=1)
         self.can_switch = rospy.Publisher( '/can_switch', Int8MultiArray, queue_size=1)
         self.radar_state = rospy.Publisher('/radar', Bool, queue_size=1)
@@ -301,7 +302,8 @@ class Bridge:
         elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 160 and self.mode == 1:
             self.switch[2] = 1
             self.switch_on = True
-
+        elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 160 and self.mode == 0:
+            self.steer_torque.publish(True)
         return record #, self.switch
 
     def set_custom_bsd(self):
@@ -348,7 +350,7 @@ class Bridge:
             time.sleep(0.02)
     
     def set_sw_state(self, current, target):
-        if(self.sas11_data['SAS_Angle'] > 5):
+        if(int(abs(self.sas11_data['SAS_Angle'])) > 5):
             target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/5)) # for kiapi 40
         if current < target:
             return 1
