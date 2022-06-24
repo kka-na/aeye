@@ -18,6 +18,7 @@ class TOR_Record:
         rospy.Subscriber('/system_state', Int8MultiArray, self.system_state_callback)
         rospy.Subscriber('/lane_warn', Int8, self.lane_warn_callback)
         rospy.Subscriber('/aeb', Bool, self.aeb_callback)
+        rospy.Subscriber('/toq', Bool, self.toq_callback)
 
         #AEB sub ...
 
@@ -39,6 +40,8 @@ class TOR_Record:
         self.tor_on = False
         self.tor_cnt = 0
 
+        self.toq = False
+
         
     def can_switch_callback(self, msg):
         self.can_switch_array = msg.data
@@ -54,6 +57,8 @@ class TOR_Record:
         self.lane_warning = msg.data
     def aeb_callback(self, msg):
         self.aeb = msg.data
+    def toq_callback(self, msg):
+        self.toq = msg.data
    
 
     def publisher(self):
@@ -63,10 +68,11 @@ class TOR_Record:
         while not rospy.is_shutdown():
 
             if self.tor_on:
-                if self.tor_cnt >= 30 and self.can_switch_array[2] == 1  :
+                if self.tor_cnt >= 30 and self.toq :
                     self.tor_record_array.data = 0
                     self.tor_cnt = 0
                     self.tor_on = False 
+                    self.toq = False
                 else:
                     self.tor_cnt += 1
 
