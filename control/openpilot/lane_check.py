@@ -149,7 +149,7 @@ class LaneCheck:
                 self.lane_prob = True
             else:
                 self.lane_prob = False
-            print(self.sm['modelV2'].laneLineProbs[1],self.sm['modelV2'].laneLineProbs[2])
+            #print(self.sm['modelV2'].laneLineProbs[1],self.sm['modelV2'].laneLineProbs[2])
     
     def get_edge(self):
         if self.sm['modelV2'].roadEdges:
