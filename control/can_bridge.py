@@ -364,14 +364,15 @@ class Bridge:
         #     target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/5)) # for kiapi 40
         
         #For License    
-        if self.l_curvature < 300:
-            target = min(target, target-int(abs(300-self.l_curvature)*0.05))
-        elif self.r_curvature < 300:
-            target = min(target, target-int(abs(300-self.r_curvature )*0.05))
+        # if self.l_curvature < 300:
+        #     target = min(target, target-int(abs(300-self.l_curvature)*0.05))
+        # elif self.r_curvature < 300:
+        #     target = min(target, target-int(abs(300-self.r_curvature )*0.05))
         
         #For KIAPI
-        #if self.l_curvature < 300 or self.r_curvature < 300:
-            #target = 40
+        if self.l_curvature < 300 or self.r_curvature < 300:
+            target = 40
+
         if current < target:
             return 1
         elif current > target:
