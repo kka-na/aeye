@@ -64,7 +64,7 @@ class Bridge:
             'TTC' : 10e2}
         self.obj_dist = 0
         self.last_obj_dist = 0 #from obj_dist 
-        self.scc12_data = {'ACCMode' : 0, 'CF_VSM_Warn':0}
+        self.scc12_data = {'ACCMode' : 0, 'CF_VSM_Warn':0, 'aReqRaw':0, 'aReqValue':0}
         self.scc14_data = {'ComfortBandLower' : 0, 'JerkLowerLimit' : 0} 
         self.sas11_data = {'SAS_Angle' :  0} #from SAS11
         self.mdps11_data = {'CR_Mdps_DrvTq': 0}
@@ -142,7 +142,6 @@ class Bridge:
     def r_curvature_callback(self, msg):
         self.r_curvature = msg.data
 
-
     def set_SCC11(self, data): #1056
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.scc11_data['MainMode_ACC'] = data['MainMode_ACC']
@@ -153,26 +152,17 @@ class Bridge:
         self.scc11_data['TTC'] = abs(TTC) if data['ACC_ObjRelSpd'] < 0 else 10e1
         #print(self.scc11_data['TTC'])
         self.ttc_test.publish(TTC)
-
     def set_SCC12(self, data): #1057
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.scc12_data['ACCMode']= True if data['ACCMode'] == "enabled" else False
         self.scc12_data['CF_VSM_Warn'] = data['CF_VSM_Warn']
+        self.check_checksum(data)
+        # can_msg = self.generate_brake() # Create SCC12 force brake 
+        # return can_msg  # Create SCC12 force brake
     def set_SCC14(self, data): #1057
         data = self.db.decode_message(data.arbitration_id, data.data)
-        self.scc14_data['JerkLowerLimit'] = max(data['JerkLowerLimit'], self.scc14_data['JerkLowerLimit'])
-        self.scc14_data['ComfortBandLower'] = max(data['ComfortBandLower'], self.scc14_data['ComfortBandLower'])
-
-        data['JerkLowerLimit'] = 10
-        if(self.scc11_data['TTC'] <= 2.5 or self.op_fcw):
-            print('FORCED')
-        print("Jerk Lower : {} \t Comfort Lower : {}".format(self.scc14_data['JerkLowerLimit']\
-                                                ,self.scc14_data['ComfortBandLower']))
-        msg = self.db.encode_message('SCC14', data) #Custom AEye data for BSD
-        can_msg = can.Message(arbitration_id=905, data=msg, is_extended_id=False)
-    
+        can_msg = self.generate_jerk(data)
         return can_msg
-
     def set_SAS11(self, data): #688
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.sas11_data['SAS_Angle']  = data['SAS_Angle']
@@ -204,9 +194,33 @@ class Bridge:
     def set_LKAS11(self, data): # 832
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.lkas11_data['CF_Lkas_Chksum'] = data['CF_Lkas_Chksum']
-        # print(data)
-        # print(data['CF_Lkas_Chksum'])
-        # print("chksum : {}".format(self.lkas11_data['CF_Lkas_Chksum']))
+    def generate_jerk(self, data):
+        self.scc14_data['JerkLowerLimit'] = max(data['JerkLowerLimit'], self.scc14_data['JerkLowerLimit'])
+        self.scc14_data['ComfortBandLower'] = max(data['ComfortBandLower'], self.scc14_data['ComfortBandLower'])
+        print("Jerk Lower : {} \t Comfort Lower : {}".format(self.scc14_data['JerkLowerLimit']\
+                                                ,self.scc14_data['ComfortBandLower']))
+        if(self.scc11_data['TTC'] <= 2.5 or self.op_fcw):
+            data['JerkLowerLimit'] = 8
+        msg = self.db.encode_message('SCC14', data) #Custom AEye data for BSD
+        can_msg = can.Message(arbitration_id=905, data=msg, is_extended_id=False)
+    def generate_brake(self, data):
+        if(self.scc11_data['TTC'] <= 2.5 or self.op_fcw):
+            target_acc = self.rcv_wheel_speed * -0.1 #Proportional gain for smooth(?) braking
+            data['aReqRaw'] = target_acc
+            data['aReqValue'] = target_acc
+            data['CR_VSM_ChkSum'] = 0
+            signal = self.db.encode_message('SCC12', data) #Custom AEye data for BSD
+            checksum = 0x10 - sum(sum(divmod(i,16) for i in signal)) % 0x10 
+            data['CR_VSM_ChkSum'] = checksum
+        msg = self.db.encode_message('SCC12', data) #Custom AEye data for BSD
+        can_msg = can.Message(arbitration_id=1057, data=msg, is_extended_id=False)
+        return can_msg
+    def check_checksum(self, data):
+        print(data['CR_VSM_ChkSum'])
+        data['CR_VSM_ChkSum'] = 0
+        msg = self.db.encode_message('SCC12', data) #Custom AEye data for BSD
+        checksum = 0x10 - sum(sum(divmod(i,16) for i in signal)) % 0x10 
+        print(checksum)
 
     #Thread 1
     def bridge(self):
@@ -223,6 +237,7 @@ class Bridge:
                         self.set_SCC11(SCC_data)
                     if SCC_id == 1057:
                         self.set_SCC12(SCC_data)
+                        # SCC_data = self.set_SCC12(SCC_data)
                     if SCC_id == 688:
                         self.set_SAS11(SCC_data)
                     if SCC_id == 909:
@@ -236,7 +251,6 @@ class Bridge:
                         self.CCAN.send(SCC_data)
                         bsd_time = time.time()
                 #Send CCAN to SCC ( Except CLU11 )
-
 
                 CCAN_data =self.CCAN.recv(0)                
                 if CCAN_data != None:
@@ -339,7 +353,6 @@ class Bridge:
         msg = self.db.encode_message('aeye', data) #Custom AEye data for BSD
         can_msg = can.Message(arbitration_id=1060, data=msg, is_extended_id=False)
         return can_msg
-
 
 
     #Thread 2
