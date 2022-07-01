@@ -84,10 +84,11 @@ class LaneCheck:
                     #     # self.warnLane = 0
                     #     print("Lane Stable")
 
-                    lane_width = line2s[0]-line1s[0]
-                    print("Left Lane : {} ".format(float(line1s[0])))
-                    print("Right Lane : {} ".format(float(line2s[0] )))
-                    print("Right Lane : {} ".format(float(lane_width)))
+                    lane_width = line2s[15]-line1s[15]
+                    print("Left Lane : {} ".format(float(line1s[15])))
+                    print("Right Lane : {} ".format(float(line2s[15] )))
+                    print("Lane Width : {} ".format(float(lane_width)))
+                    print("Y : {}m".format(float(x[15])))
                     print("="*50)
 
                     # Lane Prob
@@ -96,7 +97,7 @@ class LaneCheck:
                     print("Left Lane Probability : {} ".format(float(lll_prob)))
                     print("Right Lane Probability : {} ".format(float(rll_prob)))
                     d_prob = (lll_prob + rll_prob) - (lll_prob * rll_prob) # or - and => only one lane
-                    print("Only One Lane Probability : {} ".format(float(rll_prob)))
+                    print("Only One Lane Probability : {} ".format(float(d_prob)))
                     print("="*50)
 
                     # Lane STD
@@ -134,7 +135,7 @@ class LaneCheck:
                     animated_plot = plt.plot(line0s, x, 'bo', line1s, x, 'ro', line2s, x, 'ro', line3s, x, 'bo', linestyle='--')[0]
 
                     plt.draw()
-                    # plt.pause(0.1)
+                    plt.pause(0.1)
 
         
 def signal_handler(sig, frame):
@@ -149,7 +150,7 @@ if __name__ == "__main__":
     while True:
         try:  
             signal.signal(signal.SIGINT, signal_handler)
-            os.system('clear')
+            #os.system('clear')
             lc.get_lane_lines()
             time.sleep(0.2)
             # lc.get_fcw_events()
