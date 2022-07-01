@@ -64,7 +64,8 @@ class Bridge:
             'TTC' : 10e2}
         self.obj_dist = 0
         self.last_obj_dist = 0 #from obj_dist 
-        self.scc12_data  = {'ACCMode' : 0, 'CF_VSM_Warn':0}
+        self.scc12_data = {'ACCMode' : 0, 'CF_VSM_Warn':0}
+        self.scc14_data = {'ComfortBandLower' : 0, 'JerkLowerLimit' : 0} 
         self.sas11_data = {'SAS_Angle' :  0} #from SAS11
         self.mdps11_data = {'CR_Mdps_DrvTq': 0}
         self.clu_data = {'CF_Clu_Vanz' : 0, 
@@ -157,6 +158,21 @@ class Bridge:
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.scc12_data['ACCMode']= True if data['ACCMode'] == "enabled" else False
         self.scc12_data['CF_VSM_Warn'] = data['CF_VSM_Warn']
+    def set_SCC14(self, data): #1057
+        data = self.db.decode_message(data.arbitration_id, data.data)
+        self.scc14_data['JerkLowerLimit'] = max(data['JerkLowerLimit'], self.scc14_data['JerkLowerLimit'])
+        self.scc14_data['ComfortBandLower'] = max(data['ComfortBandLower'], self.scc14_data['ComfortBandLower'])
+
+        data['JerkLowerLimit'] = 10
+        if(self.scc11_data['TTC'] <= 2.5 or self.op_fcw):
+            print('FORCED')
+        print("Jerk Lower : {} \t Comfort Lower : {}".format(self.scc14_data['JerkLowerLimit']\
+                                                ,self.scc14_data['ComfortBandLower']))
+        msg = self.db.encode_message('SCC14', data) #Custom AEye data for BSD
+        can_msg = can.Message(arbitration_id=905, data=msg, is_extended_id=False)
+    
+        return can_msg
+
     def set_SAS11(self, data): #688
         data = self.db.decode_message(data.arbitration_id, data.data)
         self.sas11_data['SAS_Angle']  = data['SAS_Angle']
@@ -211,6 +227,8 @@ class Bridge:
                         self.set_SAS11(SCC_data)
                     if SCC_id == 909:
                         self.set_FCA11(SCC_data)
+                    if SCC_id == 905:
+                        SCC_data = self.set_SCC14(SCC_data)
                     self.CCAN.send(SCC_data)
                 else:     #Publish Custom BSD Data
                     if time.time() - bsd_time > 0.1:
@@ -305,13 +323,13 @@ class Bridge:
         record[5] = int(self.rcv_wheel_speed)
 
 
-        if self.e_ems11_data['Brake_Pedal_Pos'] > 10 and self.mode == 1:
+        if self.e_ems11_data['Brake_Pedal_Pos'] > 20 and self.mode == 1:
             self.switch[0] = 1
             self.switch_on = True
-        elif self.e_ems11_data['Accel_Pedal_Pos'] > 10 and self.mode == 1:
+        elif self.e_ems11_data['Accel_Pedal_Pos'] > 20 and self.mode == 1:
             self.switch[1] = 1
             self.switch_on = True
-        elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 220 and self.mode == 1: #160->220
+        elif abs(self.mdps11_data['CR_Mdps_DrvTq']) > 200 and self.mode == 1: #160->220
             self.switch[2] = 1
             self.switch_on = True
         return record #, self.switch
@@ -364,14 +382,14 @@ class Bridge:
         #     target = min(target, target - int(abs(self.sas11_data['SAS_Angle'])/5)) # for kiapi 40
         
         #For License    
-        # if self.l_curvature < 300:
-        #     target = min(target, target-int(abs(300-self.l_curvature)*0.05))
-        # elif self.r_curvature < 300:
-        #     target = min(target, target-int(abs(300-self.r_curvature )*0.05))
+        if self.l_curvature < 300:
+            target = min(target, target-int(abs(300-self.l_curvature)*0.05))
+        elif self.r_curvature < 300:
+            target = min(target, target-int(abs(300-self.r_curvature )*0.05))
         
         #For KIAPI
-        if self.l_curvature < 300 or self.r_curvature < 300:
-            target = 40
+        # if self.l_curvature < 300 or self.r_curvature < 300:
+            # target = 40
 
         if current < target:
             return 1
