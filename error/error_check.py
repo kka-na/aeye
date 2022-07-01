@@ -205,7 +205,7 @@ class Final:
         # ---
         # This is for Test  ( Have to Remove !!!!!! )
         sensorstate.data = [0,0,0,0,0,0]
-        systemstate.data = [0,0,0] #self.test_lane]
+        systemstate.data = [0, 0, self.test_lane]
         # ---- 
         
         self.sensor_check.publish(sensorstate)

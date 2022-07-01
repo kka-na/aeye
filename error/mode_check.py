@@ -50,7 +50,7 @@ class ModeChanger:
         mode_msg = Int8()
 
         # TOR8 = AEB : Do Not Need to Change Mode
-        if self.prev_mode == 1 and self.tor != 0 and self.tor != 8: 
+        if self.prev_mode == 1 and self.tor != 0 and self.tor != 8: # for kiapi and self.tor != 7: 
             if self.tor_cnt >= 10:
                 mode_msg.data = 0
                 self.mode_set = 0
