@@ -1,11 +1,11 @@
-# Autonomous License Project - VACS
+# Incense - Autonomous License Project 
 Code for the **Inha University autonomous license project**.
 
 This project is divided into three separate modules which are linked via ROS.
 <details>
     <summary><b>System Diagram</b></summary>
   
-![System Diagram](http://165.246.39.210/public/vacs_diagram.png)
+![System Diagram](http://165.246.39.210/public/aeye_diagram.png)
   </details>
 
 ## Milestones 👷
