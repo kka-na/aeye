@@ -25,18 +25,15 @@ class Final:
         rospy.Subscriber('/lkas',Bool , self.lkas_callback)        
         rospy.Subscriber('/mode', Int8, self.mode_callback)
 
-        # kana modify
         self.gps_check = rospy.Publisher('/gps_accuracy', Point,  queue_size=1)
         self.sensor_check = rospy.Publisher('/sensor_state', Int8MultiArray, queue_size=1)
         self.system_check = rospy.Publisher('/system_state', Int8MultiArray, queue_size=1)
 
         self.Video0_count = 0
-        # self.Video1_count = 0
         self.LiDAR_points_count = 0
         self.Sbg_euler_count = 0
         self.Video0_result_count = 0
         self.LiDAR_result_count = 0
-        # kana modify
         self.GPS_error_type = 0
         self.FIX_error_type = 0
         self.GPS_accuracy = 0
@@ -87,23 +84,19 @@ class Final:
             sensor_state.data.extend([True])
         elif not self.lkas:
             sensor_state.data.extend([False])
-        
         print("LKAS : {}".format(self.lkas))
 
         if self.LiDAR_points_count > 6:
             sensor_state.data.extend([False])
         else:
             sensor_state.data.extend([True])
-
         print("LiDAR : {}Hz".format(self.LiDAR_points_count))
 
         if self.GPS_error_type == 0 and self.FIX_error_type == 0:
             sensor_state.data.extend([False])
         else:
             sensor_state.data.extend([True])
-
         print("GPS : {}, {}".format(self.GPS_error_type, self.FIX_error_type))
-
         gps_accuracy.x = not self.GPS_error_type
         gps_accuracy.y = self.GPS_accuracy
 
@@ -111,14 +104,12 @@ class Final:
             sensor_state.data.extend([False])
         elif self.Sbg_euler_count <= 18:
             sensor_state.data.extend([True])
-        
         print("INS : {}Hz".format(self.Sbg_euler_count))
 
         if self.radar == 1: # RADAR true
             sensor_state.data.extend([False])
         elif self.radar == 0: # RADAR false
             sensor_state.data.extend([True])
-
         print("Radar : {}".format(self.radar))
 
 
@@ -127,14 +118,12 @@ class Final:
             system_state.data.extend([False])
         else:
             system_state.data.extend([True])
-
         print("Camera result : {}Hz".format(self.Video0_result_count))
 
         if self.LiDAR_result_count > 3:
             system_state.data.extend([False])
         else:
             system_state.data.extend([True])
-
         print("LiDAR result : {}Hz".format(self.LiDAR_result_count))
 
         if self.unstable_lane and self.mode == 0:
