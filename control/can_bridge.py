@@ -376,7 +376,7 @@ class Bridge:
     def set_sw_state(self, current, target):
         #For License    
         if self.l_curvature < 300:
-            target = min(target, target-int(abs(30 0-self.l_curvature)*0.05))
+            target = min(target, target-int(abs(300-self.l_curvature)*0.05))
         elif self.r_curvature < 300:
             target = min(target, target-int(abs(300-self.r_curvature )*0.05))
         
