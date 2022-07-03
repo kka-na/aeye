@@ -5,7 +5,12 @@ import rospy
 import signal
 import sys
 import time
+import utm
+import config
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
 from std_msgs.msg import Bool, Int8, Int16MultiArray, Int16
+from sbg_driver.msg import SbgEkfNav
 
 os.environ["ZMQ"] = "1"
 
@@ -22,6 +27,7 @@ class LaneCheck:
         self.op_fcw = rospy.Publisher('/op_fcw', Bool, queue_size = 1)
 
         rospy.Subscriber('/can_record', Int16MultiArray, self.can_record_callback)
+        rospy.Subscriber('/sbg/ekf_nav', SbgEkfNav, self.ekf_nav_callback)
        
         self.curvature_pub = rospy.Publisher('/curvature', Int16, queue_size=1)
         self.curvature = 0
@@ -33,9 +39,17 @@ class LaneCheck:
         self.vel = 0
         self.lane_prob = False
         self.edge = 0
+        self.joining = False 
+
+        self.area = Polygon(config.inha)
     
     def can_record_callback(self, msg):
         self.vel = msg.data[5]
+
+    def ekf_nav_callback(self, msg):
+        x,y,_,_ = utm.from_latlon(msg.latitude, msg.longitude, 52, 'N')
+        car = Point(y,x)
+        self.joining = self.area.contains(car)
 
     def reconnect(self):
         addr = '192.168.101.100'
@@ -74,7 +88,7 @@ class LaneCheck:
                         self.onLane = True
                     if (line2s[0]<0.7):
                         self.onLane = True
-                    if (self.curvature < 90) and self.vel < 25):
+                    if ((self.curvature < 90) and self.vel < 25):
                         self.onLane = True
 
                     # 3. Calculate Lane Departure
@@ -83,7 +97,7 @@ class LaneCheck:
                     else:    
                         if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
                             self.warnLane = 1
-                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.curvature < 80):
+                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.curvature < 80) or self.joining:
                             self.warnLane = 2
                         else:
                             self.warnLane = 0

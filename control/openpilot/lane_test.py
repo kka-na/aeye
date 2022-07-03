@@ -71,19 +71,31 @@ class LaneCheck:
                     brake4MetersPerSecondSquaredProbs @5 :List(Float32);
                     brake5MetersPerSecondSquaredProbs @6 :List(Float32);
                 }
+
+                enum Desire {
+                    none @0;
+                    turnLeft @1;
+                    turnRight @2;
+                    laneChangeLeft @3;
+                    laneChangeRight @4;
+                    keepLeft @5;
+                    keepRight @6;
+                }
+
                 '''
 
-                desirePrediction = md.meta.desirePrediction
-                desireState = md.meta.desireState
-                print("Desire Prediction: {}".format(desirePrediction))
-                print("Desire State: {}".format(desireState))
-                brakeDisengageProbs = md.meta.disengagePredictions.brakeDisengageProb
+                desirePrediction_turnLeft = list(md.meta.desirePrediction)[4:8]
+                desirePrediction_laneChangeLeft = list(md.meta.desirePrediction)[16:20]
+                print("Desire Prediction Turn Left: {}\n".format(desirePrediction_turnLeft))
+                print("Desire Prediction Lane Change Left: {}\n".format(desirePrediction_laneChangeLeft))
+                '''
+                brakeDisengageProbs = md.meta.disengagePredictions.brakeDisengageProbs
                 gasDisengageProbs = md.meta.disengagePredictions.gasDisengageProbs
                 steerOverrideProbs = md.meta.disengagePredictions.steerOverrideProbs
-                print("Brake Disengage Probs : {}".format(brakeDisengageProbs))
-                print("Gas Disengage Probs : {}".format(gasDisengageProbs))
-                print("Stter Override Probs : {}".format(steerOverrideProbs))
-
+                print("Brake Disengage Probs : {}\n".format(brakeDisengageProbs))
+                print("Gas Disengage Probs : {}\n".format(gasDisengageProbs))
+                print("Steer Override Probs : {}\n".format(steerOverrideProbs))
+                '''
                 # LaneLines
                 for i, _ in enumerate(md.laneLines):
                     self.line_dict[str(i)] = _
