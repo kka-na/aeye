@@ -13,6 +13,7 @@ from std_msgs.msg import Bool, Int8, Int16MultiArray, Int16
 from sbg_driver.msg import SbgEkfNav
 
 os.environ["ZMQ"] = "1"
+ZONE = config.kcity # TOR zone
 
 class LaneCheck:
     def __init__(self):
@@ -41,7 +42,7 @@ class LaneCheck:
         self.edge = 0
         self.joining = False 
 
-        self.area = Polygon(config.inha)
+        self.area = Polygon(ZONE)
     
     def can_record_callback(self, msg):
         self.vel = msg.data[5]
@@ -97,15 +98,15 @@ class LaneCheck:
                     else:    
                         if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
                             self.warnLane = 1
-                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.curvature < 80) or self.joining:
+                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.curvature < 60) or self.joining:
                             self.warnLane = 2
                         else:
                             self.warnLane = 0
                     
                      # 4. Calculate Curvature 
-                    xx = np.array(x)[5:15] # for calculate forward lane (5~15)
-                    lefty = np.array(line1s)[5:15]
-                    righty = np.array(line2s)[5:15]
+                    xx = np.array(x)[3:16] # for calculate forward lane (5~15)
+                    lefty = np.array(line1s)[3:16]
+                    righty = np.array(line2s)[3:16]
                     left_fit_cr = np.polyfit(xx, lefty, 2) # return poltnomial coefficient
                     right_fit_cr = np.polyfit(xx, righty, 2)
                     left_curvated = min(int(((1+(2*left_fit_cr[0]+left_fit_cr[1])**2)**1.5)/np.absolute(2*left_fit_cr[0])), 30000) # calculate curvature

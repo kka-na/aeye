@@ -106,6 +106,8 @@ class Bridge:
 
         self.curvature = 0
 
+        self.curv_avg = [500 for _ in range(15)]
+
     def mode_callback(self, msg):
         self.mode = msg.data
 
@@ -120,6 +122,10 @@ class Bridge:
 
     def curvature_callback(self, msg):
         self.curvature = msg.data
+        self.curv_avg.pop(0)
+        self.curv_avg.append(min(self.curvature, 500))
+        self.curvature = sum(self.curv_avg)/len(self.curv_avg)
+
 
     def set_SCC11(self, data):  # 1056
         data = self.db.decode_message(data.arbitration_id, data.data)
@@ -371,8 +377,9 @@ class Bridge:
         # target = 40
 
         # For License
-        if self.curvature < 300:
-            target = min(target, target-int(abs(300-self.curvature)*0.05))
+        if self.curvature < 400:
+            target = min(target, target-int(abs(400-self.curvature)*0.1))
+
         if current < target:
             return 1
         elif current > target:
