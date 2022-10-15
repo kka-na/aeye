@@ -14,6 +14,7 @@ from sbg_driver.msg import SbgEkfNav
 
 os.environ["ZMQ"] = "1"
 ZONE = config.kcity # TOR zone
+HIGH = config.kcity_high
 
 class LaneCheck:
     def __init__(self):
@@ -43,6 +44,7 @@ class LaneCheck:
         self.joining = False 
 
         self.area = Polygon(ZONE)
+        self.area_one = Polygon(HIGH)
     
     def can_record_callback(self, msg):
         self.vel = msg.data[5]
@@ -50,7 +52,7 @@ class LaneCheck:
     def ekf_nav_callback(self, msg):
         x,y,_,_ = utm.from_latlon(msg.latitude, msg.longitude, 52, 'N')
         car = Point(y,x)
-        self.joining = self.area.contains(car)
+        self.joining = self.area.contains(car) or self.area_one.contains(car)
 
     def reconnect(self):
         addr = '192.168.101.100'
@@ -98,8 +100,9 @@ class LaneCheck:
                     else:    
                         if (-0.9<line1s[0]<-0.75 or 0.75<line2s[0]<0.9):
                             self.warnLane = 1
-                        elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.curvature < 60) or self.joining:
-                            self.warnLane = 2
+                        #elif (-0.75<line1s[0] or 0.75>line2s[0]) or self.lane_prob or (self.curvature < 40) or self.joining:
+                        # elif self.lane_prob or self.joining:
+                        #     self.warnLane = 2
                         else:
                             self.warnLane = 0
                     

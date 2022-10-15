@@ -183,12 +183,12 @@ class LaneCheck:
                 plt.ion()
                 plt.cla()
                 plt.figure
-                plt.xlim(-2.5, 7.5)
+                plt.xlim(-5, 5)
                 plt.ylim(0, 50)
                 plt.plot(edge0s, x, 'go', line0s, x, 'bo', line1s, x, 'ro', line2s,
                          x, 'ro', line3s, x, 'bo', edge1s, x, 'go', linestyle='--')
-                # plt.draw()
-                # plt.pause(0.1)
+                plt.draw()
+                plt.pause(0.1)
 
     def get_car_state(self):
         if self.sm['carState']:
